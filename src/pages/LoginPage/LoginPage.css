@@ -1,0 +1,117 @@
+.login-form-container {
+	margin-top: 10px;
+	position: relative;
+	min-height: 350px;
+	max-width: 420px;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 40px;   
+	box-sizing: border-box;
+	background: #ffffff;
+	border-radius: 10px;
+	border: 1px solid #e0e0e0;
+	box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+.login-form-container h2 {
+	text-align: center;
+	margin: 0 0 20px 0;
+}
+
+.form-field {
+	display: flex;
+	flex-direction: row; 
+	align-items: center; 
+	gap: 5px; /* label 和 input 的間距 */
+}
+
+.form-field + .form-field {
+	margin-top: 15px;
+}
+
+.form-field label {
+	margin: 0;
+	font-weight: 500;
+	width: 50px;
+	text-align: right;
+}
+
+.form-field input {
+	flex: 1;
+	padding: 7px 12px;
+	border-radius: 8px;
+	border: 1px solid #a2a0a0;
+	font-size: 1rem;
+}
+
+.btn {
+	margin-top: 20px;
+	padding: 0.7em 1.2em;
+	border-radius: 10px;
+	font-size: 1em;
+	font-weight: 500;
+	cursor: pointer;
+	border: none;
+}
+
+/* 登入按鈕*/
+.submit-btn {
+	background: #728ac7;
+	color: #fff;
+	width: 100%;
+}
+
+/* 訪客模式按鈕 */
+.visitor-btn {
+	background: #61ab77;
+	color: #fff;
+	width: 100%;
+	margin-top: 12px;
+}
+
+.message {
+	margin-top: 15px;
+	color: #333;
+}
+
+.btn-link {
+	position: absolute;
+	bottom: -60px;
+	background: none;
+	color: #5875c0;
+	border: none;
+	font-size: 1em;
+	cursor: pointer;
+	padding: 8px;
+}
+
+.left-link {
+	left: -5px;
+}
+
+.right-link {
+	right: 2px;
+}
+
+/* 頁面寬度較小時，避免按鈕跑掉 */
+@media (max-width: 480px) {
+	.login-form-container {
+		margin: 20px;
+		padding: 16px;
+	}
+	.left-link, .right-link {
+		display: none;
+	}
+	.form-field {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.form-field label {
+		width: auto;
+		text-align: left;
+		margin-bottom: 6px;
+	}
+	.form-field input {
+		flex: none;
+	}
+}
