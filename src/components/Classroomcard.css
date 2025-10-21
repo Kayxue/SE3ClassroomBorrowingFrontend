@@ -1,0 +1,41 @@
+.classroom-card {
+  width: 180px;
+  height: 200px;
+  background: #ffffff;
+  border: 3px solid #0c2a5b;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.classroom-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.classroom-image {
+  width: 100%;
+  height: 120px;
+  border-bottom: 3px solid #0c2a5b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.classroom-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.classroom-name {
+  text-align: center;
+  color: #0c2a5b;
+  font-weight: 600;
+  padding: 10px 0;
+}
