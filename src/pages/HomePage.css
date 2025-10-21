@@ -1,4 +1,3 @@
-/* 頁面主要容器 */
 .homepage-container {
   min-height: 100vh;
   background: #ffffff;
@@ -8,24 +7,23 @@
   align-items: center;
 }
 
-/* 左上角 Logo 區 — 改成固定位置 */
+
 .homepage-header {
-  position: fixed;  /* ✅ 固定在畫面左上角，不被置中影響 */
+  position: fixed;  
   top: 20px;
   left: 40px;
   z-index: 1000;
 }
 
 .homepage-logo {
-  width: 160px; /* ✅ 放大一點 */
+  width: 160px; 
   height: auto;
 }
 
-/* 右上角 登入按鈕 */
 .login-button {
-  position: fixed;       /* ✅ 改成固定在整個螢幕右上角 */
-  top: 30px;             /* 與上方距離 */
-  right: 60px;           /* 與右側距離 */
+  position: fixed;       
+  top: 30px;             
+  right: 60px;           
   background-color: #0c2a5b;
   color: white;
   border: none;
@@ -43,11 +41,9 @@
   transform: scale(1.05);
 }
 
-
-/* 主體內容 */
 .homepage-content {
   text-align: center;
-  padding: 100px 0 60px 0; /* ✅ 上方預留空間，避免被 logo 擋住 */
+  padding: 100px 0 60px 0; 
 }
 
 .homepage-content h1 {
@@ -61,4 +57,81 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 30px;
   justify-items: center;
+}
+
+/* 以下為彈跳式視窗 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: #fffef9;
+  border: 3px solid #0c2a5b;
+  border-radius: 10px;
+  width: 500px;
+  padding: 24px;
+  position: relative;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  color: #0c2a5b;
+  font-family: "Noto Sans TC", sans-serif;
+}
+
+/* 關閉按鈕 */
+.modal-close {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  font-size: 28px;
+  font-weight: bold;
+  background: none;
+  border: none;
+  color: #0c2a5b;
+  cursor: pointer;
+}
+
+.modal-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border-bottom: 2px solid #0c2a5b;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.modal-thumbnail {
+  width: 100px;
+  height: 100px;
+  border: 2px solid #0c2a5b;
+  border-radius: 6px;
+  object-fit: cover;
+  background-color: #fff;
+}
+
+.modal-info {
+  flex: 1;
+}
+
+.modal-info h2 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal-info p {
+  margin: 4px 0;
+  font-size: 15px;
+}
+
+/* 之後要寫申請的部分留白 */
+.modal-bottom {
+  min-height: 120px;
 }
