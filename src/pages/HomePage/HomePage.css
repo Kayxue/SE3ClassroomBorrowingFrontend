@@ -135,3 +135,45 @@
 .modal-bottom {
   min-height: 120px;
 }
+
+/* 深色模式 */
+
+@media (prefers-color-scheme: dark) {
+  .homepage-container {
+    background: #121212;
+    color: #ffffff;
+  }
+
+  .homepage-content h1 {
+    color: #ffffff;
+  }
+
+  .login-button {
+    background-color: #ffffff;
+    color: #0c2a5b;
+  }
+
+  .login-button:hover {
+    background-color: #cfd8ff;
+    transform: scale(1.05);
+  }
+
+  .modal-content {
+    background: #1f1f1f;
+    color: #ffffff;
+    border: 2px solid #cfd8ff;
+  }
+
+  .modal-close {
+    color: #ffffff;
+  }
+
+  .modal-thumbnail {
+    border-color: #cfd8ff;
+    background-color: #2c2c2c;
+  }
+
+  .modal-top {
+    border-bottom: 2px solid #cfd8ff;
+  }
+}
