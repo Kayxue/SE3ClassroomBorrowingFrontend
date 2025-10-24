@@ -1,5 +1,5 @@
 import React from "react";
-import "./ClassroomCard.css";
+import "./Classroomcard.css";
 import unknownPic from "../assets/unknowpic.jpg"; 
 
 type ClassroomCardProps = {
