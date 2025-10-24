@@ -115,3 +115,47 @@
 		flex: none;
 	}
 }
+
+/* 深色模式 */
+@media (prefers-color-scheme: dark) {
+	.login-form-container {
+		background: #1f1f23;
+		color: #e6e6e6;
+		border: 1px solid rgba(255,255,255,0.06);
+		box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+	}
+
+	.login-form-container h2 {
+		color: #ffffff;
+	}
+
+	.form-field label,
+	.message {
+		color: #dcdcdc;
+	}
+
+	.form-field input {
+		background: #2a2a2f;
+		color: #f5f5f5;
+		border: 1px solid rgba(255,255,255,0.06);
+	}
+
+	.submit-btn {
+		background: #5f78b0;
+		color: #fff;
+	}
+	.visitor-btn {
+		background: #4a8f5f;
+		color: #fff;
+	}
+
+	.btn-link {
+		color: #9fb3ff;
+	}
+
+	@media (max-width: 480px) {
+		.login-form-container {
+			background: #1f1f23;
+		}
+	}
+}
