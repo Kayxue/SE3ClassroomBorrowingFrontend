@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import logo from "../assets/logo.svg";
-import ClassroomCard from "../components/Classroomcard";
-import unknownPic from "../assets/unknowpic.jpg";
+import logo from "../../assets/logo.svg";
+import ClassroomCard from "../../components/Classroomcard";
+import unknownPic from "../../assets/unknowpic.jpg";
 import "./HomePage.css";
 
 export default function HomePage() {
