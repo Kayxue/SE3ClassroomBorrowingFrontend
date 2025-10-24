@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate(); 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +58,11 @@ const LoginForm: React.FC = () => {
         <button
           type="button"
           className="btn visitor-btn"
-          onClick={() => {/* 訪客模式logic */}}
+          onClick={() => {
+            setTimeout(() => {
+              navigate("/home");
+            }, 1000);
+          }}
         >
           訪客模式
         </button>
