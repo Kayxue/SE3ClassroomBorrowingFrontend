@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import logo from "../../assets/logo.svg";
-import ClassroomCard from "../../components/Classroomcard";
+import ClassroomCard from "../../components/ClassroomCard";
 import unknownPic from "../../assets/unknowpic.jpg";
 import "./HomePage.css";
 

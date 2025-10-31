@@ -80,7 +80,10 @@ const LoginForm: React.FC = () => {
       <button
         type="button"
         className="btn-link right-link"
-        onClick={() => {/* 註冊logic */}}
+        onClick={() => {
+          // 導向註冊頁面
+          navigate("/signup");
+        }}
       >
         註冊
       </button>

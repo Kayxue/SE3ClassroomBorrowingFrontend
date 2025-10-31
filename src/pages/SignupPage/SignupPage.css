@@ -1,0 +1,83 @@
+.signup-page {
+  display: flex;
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  padding: 1px;
+  height: 100vh; 
+}
+
+.signup-card {
+  width: 450px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  box-sizing: border-box;
+}
+
+.signup-card h2 {
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.form-row label {
+  width: 100px;
+  text-align: right;
+  font-weight: 500;
+}
+
+.form-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #a2a0a0;
+}
+
+.btn {
+  margin-top: 12px;
+  padding: 0.7em 1.2em;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.submit-btn {
+  width: 100%;
+  background: #728ac7;
+  color: #fff;
+}
+
+.signup-message {
+  margin-top: 10px;
+  color: #333;
+  text-align: center;
+}
+
+.signup-footer {
+  margin-top: 16px;
+  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-link {
+  text-align: center;
+  background: none;
+  border: none;
+  color: #5875c0;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  bottom: 20px;
+}
