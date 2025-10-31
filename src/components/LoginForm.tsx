@@ -73,7 +73,10 @@ const LoginForm: React.FC = () => {
       <button
         type="button"
         className="btn-link left-link"
-        onClick={() => {/* 忘記密碼logic */}}
+        onClick={() => {
+          // 導向忘記密碼頁面
+          navigate("/forget");
+        }}
       >
         忘記密碼
       </button>
