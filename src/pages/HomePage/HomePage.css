@@ -46,6 +46,10 @@
   padding: 100px 0 60px 0; 
 }
 
+.classroom-grid {
+  margin-top: 40px;
+}
+
 .homepage-content h1 {
   font-size: 28px;
   font-weight: bold;
@@ -136,6 +140,98 @@
   min-height: 120px;
 }
 
+.homepage-body {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: 40px; 
+}
+
+/* 左側欄 */
+.sidebar {
+  width: 220px;
+  border: 2px solid #0c2a5b;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 140px;
+  height: auto;
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+.sidebar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0c2a5b;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+/* 右側內容 */
+.homepage-content {
+  flex: 1;
+  padding: 20px 40px;
+  text-align: center;
+}
+/* 待還項目 */
+.borrow-item {
+  background-color: #ffffff;
+  border: 2px solid #0c2a5b;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  color: #0c2a5b;
+}
+
+.borrow-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.return-btn {
+  background-color: #0c2a5b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.return-btn:hover {
+  background-color: #0c2a5b;
+  transform: scale(1.05);
+}
+
+.icon-group {
+  position: fixed;
+  top: 30px;
+  right: 60px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+/* icon */
+.icon-button {
+  font-size: 40px;
+  color: #0c2a5b;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+}
+
+.icon-button:hover {
+  color: #143c85;
+  transform: scale(1.1);
+}
+
+
 /* 深色模式 */
 
 @media (prefers-color-scheme: dark) {
@@ -176,4 +272,32 @@
   .modal-top {
     border-bottom: 2px solid #cfd8ff;
   }
+
+  .sidebar-title {
+    color: #ffffff;
+  }
+
+  .sidebar {
+    background-color: #1f1f1f;
+    border-color: #8aa4ff;
+  }
+
+  .borrow-item {
+    background-color: #2b2b2b;
+    border-color: #8aa4ff;
+    color: #ffffff;
+  }
+
+  .return-btn {
+    background-color: #8aa4ff;
+    color: #000;
+  }
+
+  .icon-button {
+    color: #ffffff;
+  }
+  .icon-button:hover {
+    color: #8aa4ff;
+  }
 }
+
