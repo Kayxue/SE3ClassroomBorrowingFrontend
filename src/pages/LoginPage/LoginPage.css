@@ -86,11 +86,11 @@
 }
 
 .left-link {
-	left: -5px;
+	left: 25px;
 }
 
 .right-link {
-	right: 2px;
+	right: 35px;
 }
 
 /* 頁面寬度較小時，避免按鈕跑掉 */

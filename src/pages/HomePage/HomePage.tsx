@@ -3,6 +3,7 @@ import logo from "../../assets/logo.svg";
 import ClassroomCard from "../../components/Classroomcard";
 import SearchBar from "../../components/SearchBar";
 import unknownPic from "../../assets/unknowpic.jpg";
+import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaEnvelope } from "react-icons/fa";
 import "./HomePage.css";
 
@@ -14,6 +15,7 @@ export default function HomePage() {
   };
 
   const [selectedClassroom, setSelectedClassroom] = useState<any>(null);
+  const navigate = useNavigate();
 
   const classrooms = [
     { name: "103 教室", type: "普通教室", capacity: 60, imageUrl: unknownPic },

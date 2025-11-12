@@ -6,11 +6,11 @@ const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // 前端先做測試
     if (!email || !password) {
       setMessage("請輸入完整的帳號與密碼");
@@ -54,7 +54,9 @@ const LoginForm: React.FC = () => {
           />
         </div>
 
-        <button type="submit" className="btn submit-btn">登入</button>
+        <button type="submit" className="btn submit-btn">
+          登入
+        </button>
         <button
           type="button"
           className="btn visitor-btn"
@@ -73,7 +75,10 @@ const LoginForm: React.FC = () => {
       <button
         type="button"
         className="btn-link left-link"
-        onClick={() => {/* 忘記密碼logic */}}
+        onClick={() => {
+          // 導向忘記密碼頁面
+          navigate("/forget");
+        }}
       >
         忘記密碼
       </button>
