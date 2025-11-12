@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import logo from "../../assets/logo.svg";
 import ClassroomCard from "../../components/Classroomcard";
 import unknownPic from "../../assets/unknowpic.jpg";
+import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 
 export default function HomePage() {
   const [selectedClassroom, setSelectedClassroom] = useState<any>(null);
+  const navigate = useNavigate();
 
   const classrooms = [
     { name: "103 教室", type: "普通教室", capacity: 60, imageUrl: unknownPic },
@@ -21,7 +23,7 @@ export default function HomePage() {
     <div className="homepage-container">
       <header className="homepage-header">
         <img src={logo} alt="Logo" className="homepage-logo" />
-        <button className="login-button">登入</button>
+        <button className="login-button" onClick={() => navigate(-1)}>登入</button>
       </header>
 
       <main className="homepage-content">

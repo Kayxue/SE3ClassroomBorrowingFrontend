@@ -40,7 +40,7 @@ export default function SignupPage(): React.ReactElement {
       React.createElement(
         "form",
         { onSubmit: handleSignup },
-        
+
         React.createElement(
           "div",
           { className: "form-row" },
@@ -114,7 +114,8 @@ export default function SignupPage(): React.ReactElement {
           { type: "submit", className: "btn submit-btn" },
           "註冊"
         ),
-        message && React.createElement("p", { className: "signup-message" }, message)
+        message &&
+          React.createElement("p", { className: "signup-message" }, message)
       ),
       React.createElement(
         "div",

@@ -23,7 +23,9 @@ export default function ForgetPage(): React.ReactElement {
         <h1 className="forget-title">忘記密碼</h1>
 
         <div className="forget-row">
-          <label htmlFor="email" className="forget-label">Email</label>
+          <label htmlFor="email" className="forget-label">
+            Email
+          </label>
           <input
             id="email"
             type="email"
@@ -35,17 +37,15 @@ export default function ForgetPage(): React.ReactElement {
           />
         </div>
 
-        <button type="submit" className="forget-button">確認</button>
+        <button type="submit" className="forget-button">
+          確認
+        </button>
 
         {message && <div className="forget-message">{message}</div>}
       </form>
 
-      <div className="signup-footer">
-        <button
-          type="button"
-          className="btn-link"
-          onClick={() => navigate(-1)}
-        >
+      <div className="forget-footer">
+        <button type="button" className="btn-link" onClick={() => navigate(-1)}>
           返回
         </button>
       </div>
