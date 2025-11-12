@@ -24,7 +24,6 @@ export default function HomePage() {
     { name: "202 教室", type: "自習教室", capacity: 30, imageUrl: unknownPic },
     { name: "203 教室", type: "電腦教室", capacity: 40, imageUrl: unknownPic },
     { name: "303 教室", type: "普通教室", capacity: 50, imageUrl: unknownPic },
-
   ];
 
   // 測試用借用清單資料
@@ -61,7 +60,11 @@ export default function HomePage() {
       {isLoggedIn ? (
         <div className="icon-group">
           <FaEnvelope className="icon-button" title="通知" />
-          <FaUserCircle className="icon-button" title="個人資料" />
+          <FaUserCircle
+            className="icon-button"
+            title="個人資料"
+            onClick={() => navigate("/profile")}
+          />
         </div>
       ) : (
         <button className="login-button">登入</button>

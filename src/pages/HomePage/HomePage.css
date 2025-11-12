@@ -211,10 +211,10 @@
 
 .icon-group {
   position: fixed;
-  top: 30px;
-  right: 60px;
+  top: 50px;
+  right: 100px;
   display: flex;
-  gap: 18px;
+  gap: 55px;
   align-items: center;
 }
 
