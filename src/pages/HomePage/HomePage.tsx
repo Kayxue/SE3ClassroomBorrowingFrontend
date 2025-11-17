@@ -67,7 +67,11 @@ export default function HomePage() {
       {isLoggedIn ? (
         <div className="icon-group">
           <FaEnvelope className="icon-button" title="通知" />
-          <FaUserCircle className="icon-button" title="個人資料" />
+          <FaUserCircle
+            className="icon-button"
+            title="個人資料"
+            onClick={() => navigate("/profile")}
+          />
         </div>
       ) : (
         <button className="login-button">登入</button>
