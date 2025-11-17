@@ -24,6 +24,13 @@ export default function HomePage() {
     { name: "202 教室", type: "自習教室", capacity: 30, imageUrl: unknownPic },
     { name: "203 教室", type: "電腦教室", capacity: 40, imageUrl: unknownPic },
     { name: "303 教室", type: "普通教室", capacity: 50, imageUrl: unknownPic },
+    { name: "103 教室", type: "普通教室", capacity: 60, imageUrl: unknownPic },
+    { name: "105 教室", type: "普通教室", capacity: 60, imageUrl: unknownPic },
+    { name: "201 教室", type: "電腦教室", capacity: 20, imageUrl: unknownPic },
+    { name: "202 教室", type: "自習教室", capacity: 30, imageUrl: unknownPic },
+    { name: "203 教室", type: "電腦教室", capacity: 40, imageUrl: unknownPic },
+    { name: "303 教室", type: "普通教室", capacity: 50, imageUrl: unknownPic },
+
   ];
 
   // 測試用借用清單資料
@@ -71,34 +78,34 @@ export default function HomePage() {
       )}
     </header>
 
-
-    <div className="homepage-body">
-      {isLoggedIn && (
-        <aside className="sidebar">
-          <h2 className="sidebar-title">待還教室列表</h2>
-          <div className="borrow-list">
-            {borrowedList.map((item, index) => (
-              <div key={index} className="borrow-item">
-                <span className="borrow-name">{item.name}</span>
-                <button className="return-btn">歸還</button>
-              </div>
-            ))}
-          </div>
-        </aside>
-
-      )}
-
-      <main className="homepage-content">
-        <SearchBar onSearch={handleSearch} />
-        <div className="classroom-grid">
-          {classrooms.map((c, i) => (
-            <div key={i} onClick={() => setSelectedClassroom(c)}>
-              <ClassroomCard name={c.name} imageUrl={c.imageUrl} />
+    {isLoggedIn && (
+      <aside className="sidebar">
+        <h2 className="sidebar-title">待還教室列表</h2>
+        <div className="borrow-list">
+          {borrowedList.map((item, index) => (
+            <div key={index} className="borrow-item">
+              <span className="borrow-name">{item.name}</span>
+              <button className="return-btn">歸還</button>
             </div>
           ))}
         </div>
-      </main>
-    </div>
+      </aside>
+
+    )}
+
+    
+      <div className="search-bar-container">
+        <SearchBar onSearch={handleSearch} />
+      </div>
+    <main className="homepage-content">
+      <div className="classroom-grid">
+        {classrooms.map((c, i) => (
+          <div key={i} onClick={() => setSelectedClassroom(c)}>
+            <ClassroomCard name={c.name} imageUrl={c.imageUrl} />
+          </div>
+        ))}
+      </div>
+    </main>
 
     {/* 彈跳式視窗 */}
     {selectedClassroom && (
