@@ -8,7 +8,7 @@ export default defineConfig({
       // Any request starting with /api will be sent to the Docker network Caddy is using
       '/api': {
         // Target Caddy's public address (if Caddy is running on port 3000)
-        target: 'http://100.94.78.5:3000', 
+        target: 'http://100.112.84.90', 
         changeOrigin: true, // Needed for virtual hosting
         secure: false,      // Use false for local HTTP
       },
