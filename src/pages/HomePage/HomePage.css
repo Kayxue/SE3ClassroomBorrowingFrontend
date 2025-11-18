@@ -48,18 +48,21 @@ html, body {
 
 .search-bar-container {
   position: fixed;
-  top: 20px !important;     
-  left: 300px !important;
-  right: 120px !important;
+  top: 50px;               
+  left: 300px;              
+  
+  width: 900px;             
+  height: 90px;             
   padding: 0px 12px !important; 
   margin: 0 !important;
   background-color: transparent !important;
 }
 
+
 .homepage-content {
-  position: sticky;
+  position: fixed;
   top: 230px;    
-  margin-left: 220px;    
+  left: 330px;
   height: calc(120vh - 400px);
   overflow-y: auto;
   padding-right: 40px;
@@ -167,7 +170,7 @@ html, body {
   top: 140px;     
   left: 40px;
   width: 180px;      
-  height: 35vh;
+  height: 280px;
   background-color: #ffffff;
   border: 2px solid #0c2a5b;
   border-radius: 10px;
@@ -176,6 +179,7 @@ html, body {
   z-index: 10;
   display: flex;
   flex-direction: column;
+
 }
 
 .sidebar-title {
@@ -223,9 +227,9 @@ html, body {
 .icon-group {
   position: fixed;
   top: 50px;
-  right: 100px;
+  left: 1200px;
   display: flex;
-  gap: 55px;
+  gap: 40px;
   align-items: center;
 }
 
