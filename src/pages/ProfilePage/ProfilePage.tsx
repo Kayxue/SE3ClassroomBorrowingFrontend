@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./ProfilePage.css";
 import { getProfile } from "../../api/profile";
 import { updatePassword } from "../../api/password";
+import { logout } from "../../api/logout"; 
 
 export default function ProfilePage() {
   const [email, setEmail] = useState("");
@@ -10,7 +11,6 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // const [lastPasswordChange, setLastPasswordChange] = useState<string | null>(null);
 
   //假資料
   const borrowRecords = [
@@ -66,9 +66,26 @@ export default function ProfilePage() {
     alert("已儲存個人資料");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    navigate("/");
+  // 登出
+  const handleLogout = async () => {
+    try {
+      const { res, data } = await logout();
+      if (res.ok) {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        navigate("/");
+      } else {
+        console.error("Logout failed:", { status: res.status, body: data });
+        if (res.status === 500) {
+          alert("登出失敗（伺服器錯誤），請稍後再試");
+        } else {
+          alert(data?.message || `登出失敗（status ${res.status}）`);
+        }
+      }
+    } catch (err) {
+      console.error("logout error:", err);
+      alert("網路錯誤，無法登出，請稍後再試");
+    }
   };
 
   // 變更密碼處理

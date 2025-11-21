@@ -26,7 +26,5 @@ export async function register(payload: {
       data = { rawText: raw };
     }
   }
-
-  // 不再在前端保存明文密碼（安全考量）
   return { res, raw, data };
 }

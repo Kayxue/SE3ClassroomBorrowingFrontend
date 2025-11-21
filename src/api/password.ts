@@ -6,14 +6,10 @@ export async function updatePassword(payload: {
   new_password: string;
   confirm: string;
 }) {
-  const token = localStorage.getItem("authToken");
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
   };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   const res = await fetch(`${API_BASE}/user/update-password`, {
     method: "PUT",

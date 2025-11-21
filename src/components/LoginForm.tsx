@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api/auth";
+import { getUserById } from "../api/user";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -17,12 +18,6 @@ const LoginForm: React.FC = () => {
       return;
     }
 
-    // 在 production 環境下強制使用 HTTPS，避免在不安全連線傳送原始密碼
-    if ((globalThis as any).process?.env?.NODE_ENV === "production" && window.location.protocol !== "https:") {
-      setMessage("為保護帳號安全，請在 HTTPS 連線下登入（伺服器端會安全處理並儲存密碼）。");
-      return;
-    }
-
     setLoading(true);
     setMessage("登入中...");
 
@@ -36,6 +31,16 @@ const LoginForm: React.FC = () => {
           localStorage.setItem("user", JSON.stringify(data));
         }
         setMessage("登入成功");
+
+        try {
+          const userId = data?.id ?? data?.user?.id ?? null;
+          if (userId) {
+            const { res: userRes, data: userData } = await getUserById(String(userId));
+          }
+        } catch (err) {
+          console.error("getUserById error:", err);
+        }
+
         setTimeout(() => navigate("/home"), 500);
       } else {
         if (res.status === 401) {
