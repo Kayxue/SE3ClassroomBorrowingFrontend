@@ -28,7 +28,7 @@ html, body {
 .login-button {
   position: fixed;       
   top: 30px;             
-  right: 60px;           
+  left: 1250px;           
   background-color: #0c2a5b;
   color: white;
   border: none;
@@ -48,18 +48,21 @@ html, body {
 
 .search-bar-container {
   position: fixed;
-  top: 20px !important;     
-  left: 300px !important;
-  right: 120px !important;
+  top: 50px;               
+  left: 300px;              
+  
+  width: 900px;             
+  height: 90px;             
   padding: 0px 12px !important; 
   margin: 0 !important;
   background-color: transparent !important;
 }
 
+
 .homepage-content {
-  position: sticky;
+  position: fixed;
   top: 230px;    
-  margin-left: 220px;    
+  left: 330px;
   height: calc(120vh - 400px);
   overflow-y: auto;
   padding-right: 40px;
@@ -167,7 +170,7 @@ html, body {
   top: 140px;     
   left: 40px;
   width: 180px;      
-  height: 35vh;
+  height: 280px;
   background-color: #ffffff;
   border: 2px solid #0c2a5b;
   border-radius: 10px;
@@ -176,6 +179,7 @@ html, body {
   z-index: 10;
   display: flex;
   flex-direction: column;
+
 }
 
 .sidebar-title {
@@ -223,9 +227,9 @@ html, body {
 .icon-group {
   position: fixed;
   top: 50px;
-  right: 100px;
+  left: 1200px;
   display: flex;
-  gap: 55px;
+  gap: 40px;
   align-items: center;
 }
 
@@ -242,6 +246,52 @@ html, body {
   transform: scale(1.1);
 }
 
+/* 編輯模式下的新增卡片 */
+.add-card {
+  border: 2px dashed #0c2a5b;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+  height: 200px;
+  cursor: pointer;
+  color: #0c2a5b;
+  transition: 0.25s;
+}
+
+.add-card:hover {
+  background-color: #f5f7ff;
+  transform: scale(1.02);
+}
+
+.plus-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+/* 教室卡片包裹，用來放刪除icon */
+.classroom-card {
+  position: relative;
+}
+
+/* 刪除按鈕樣式 */
+.delete-icon {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  color: #d9534f;
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.delete-icon:hover {
+  transform: scale(1.2);
+}
+
+
 
 /* 深色模式 */
 
@@ -253,6 +303,10 @@ html, body {
 
   .homepage-content h1 {
     color: #ffffff;
+  }
+
+  .add-card {
+    color: #8aa4ff;
   }
 
   .login-button {
@@ -310,4 +364,14 @@ html, body {
   .icon-button:hover {
     color: #8aa4ff;
   }
+
+  .modal-info {
+    background: #ffffff;
+    color: #0c2a5b; 
+  }
+  .modal-close {
+    color: #0c2a5b; 
+  }
+
+  
 }
