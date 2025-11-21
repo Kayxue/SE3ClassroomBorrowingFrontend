@@ -92,9 +92,12 @@ const LoginForm: React.FC = () => {
           className="btn visitor-btn"
           disabled={loading}
           onClick={() => {
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("user");
+
             setTimeout(() => {
               navigate("/home");
-            }, 1000);
+            }, 500);
           }}
         >
           訪客模式

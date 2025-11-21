@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "../../assets/logo.svg";
 import ClassroomCard from "../../components/Classroomcard";
 import SearchBar from "../../components/SearchBar";
@@ -8,10 +8,10 @@ import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/f
 import "./HomePage.css";
 
 export default function HomePage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false); // ✅ 新增：控制新增彈窗開關
+  const [showAddModal, setShowAddModal] = useState(false); 
 
   const navigate = useNavigate();
 
@@ -29,12 +29,21 @@ export default function HomePage() {
     { id: 6, name: "303 教室", type: "普通教室", capacity: 50, imageUrl: unknownPic },
   ]);
 
-  // ✅ 刪除教室
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      setIsLoggedIn(true);
+      const parsed = JSON.parse(user);
+      if (parsed.role === "Admin") setIsAdmin(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, []);
+
   const handleDelete = (id: number) => {
     setClassrooms((prev) => prev.filter((c) => c.id !== id));
   };
 
-  // ✅ 新增教室（實際新增動作）
   const handleAddClassroom = (newClassroom: any) => {
     const newId = classrooms.length + 1;
     setClassrooms([
@@ -98,7 +107,6 @@ export default function HomePage() {
 
       <main className="homepage-content">
         <div className="classroom-grid">
-          {/* ✅ 新增教室按鈕 → 打開彈窗 */}
           {editMode && (
             <div className="add-card" onClick={() => setShowAddModal(true)}>
               <FaPlus className="plus-icon" />
@@ -124,7 +132,6 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* ✅ 新增教室彈窗 */}
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
