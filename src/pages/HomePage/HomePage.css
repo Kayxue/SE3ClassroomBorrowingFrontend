@@ -28,7 +28,7 @@ html, body {
 .login-button {
   position: fixed;       
   top: 30px;             
-  right: 60px;           
+  left: 1250px;           
   background-color: #0c2a5b;
   color: white;
   border: none;
@@ -246,6 +246,52 @@ html, body {
   transform: scale(1.1);
 }
 
+/* 編輯模式下的新增卡片 */
+.add-card {
+  border: 2px dashed #0c2a5b;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 180px;
+  height: 200px;
+  cursor: pointer;
+  color: #0c2a5b;
+  transition: 0.25s;
+}
+
+.add-card:hover {
+  background-color: #f5f7ff;
+  transform: scale(1.02);
+}
+
+.plus-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+/* 教室卡片包裹，用來放刪除icon */
+.classroom-card {
+  position: relative;
+}
+
+/* 刪除按鈕樣式 */
+.delete-icon {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  color: #d9534f;
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.delete-icon:hover {
+  transform: scale(1.2);
+}
+
+
 
 /* 深色模式 */
 
@@ -257,6 +303,10 @@ html, body {
 
   .homepage-content h1 {
     color: #ffffff;
+  }
+
+  .add-card {
+    color: #8aa4ff;
   }
 
   .login-button {
@@ -314,4 +364,14 @@ html, body {
   .icon-button:hover {
     color: #8aa4ff;
   }
+
+  .modal-info {
+    background: #ffffff;
+    color: #0c2a5b; 
+  }
+  .modal-close {
+    color: #0c2a5b; 
+  }
+
+  
 }
