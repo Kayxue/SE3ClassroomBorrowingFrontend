@@ -8,7 +8,7 @@ RUN bun run build
 
 FROM joseluisq/static-web-server:latest
 
-ENV SERVER_FALLBACK_PAGE=index.html
+ENV SERVER_FALLBACK_PAGE=./public/index.html
 
 WORKDIR /
 
