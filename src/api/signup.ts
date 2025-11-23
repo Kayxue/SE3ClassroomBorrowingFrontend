@@ -15,6 +15,7 @@ export async function register(payload: {
       Accept: "application/json",
     },
     body: JSON.stringify(payload),
+    credentials: "include",
   });
 
   const raw = await res.text().catch(() => "");

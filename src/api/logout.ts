@@ -13,6 +13,7 @@ export async function logout() {
   const res = await fetch(`${API_BASE}/user/logout`, {
     method: "GET",
     headers,
+    credentials: "include",
   });
 
   const raw = await res.text().catch(() => "");

@@ -10,6 +10,7 @@ export async function login(email: string, password: string) {
       Accept: "application/json",
     },
     body: JSON.stringify({ email, password }),
+    credentials: "include",
   });
 
   const raw = await res.text().catch(() => "");
