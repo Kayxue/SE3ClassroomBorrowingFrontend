@@ -2,13 +2,9 @@ export const API_BASE =
   (import.meta as any)?.env?.VITE_API_BASE ?? "/api";
 
 export async function logout() {
-  const token = localStorage.getItem("authToken");
   const headers: Record<string, string> = {
     Accept: "application/json",
   };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   const res = await fetch(`${API_BASE}/user/logout`, {
     method: "GET",

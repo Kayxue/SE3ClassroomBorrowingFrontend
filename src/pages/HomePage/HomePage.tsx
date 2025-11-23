@@ -6,7 +6,8 @@ import unknownPic from "../../assets/unknowpic.jpg";
 import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./HomePage.css";
-import { getClassroomList, createClassroom, uploadClassroomPhoto } from "../../api/classroom";
+import { getClassroomList, createClassroom, updateClassroomPhoto } from "../../api/classroom";
+import { getProfile } from "../../api/profile";
 
 
 export default function HomePage() {
@@ -26,16 +27,22 @@ export default function HomePage() {
   const [classrooms, setClassrooms] = useState<any[]>([]);
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      setIsLoggedIn(true);
-      const parsed = JSON.parse(user);
-      if (parsed.role === "Admin") setIsAdmin(true);
-    } else {
-      setIsLoggedIn(false);
-    }
+    const fetchUserProfile = async () => {
+      try {
+        const { res, data } = await getProfile();
+        console.log(res.status)
+        if (res.ok && data) {
+          setIsLoggedIn(true);
+          if (data.role === "Admin") {
+            setIsAdmin(true);
+          }
+        } 
+      } catch (err) {
+        console.error("抓取使用者資料錯誤：", err);
+      }
+    };
 
-    const fetchData = async () => {
+    const fetchClassrooms = async () => {
       try {
         const { res, data } = await getClassroomList();
         if (res.ok && Array.isArray(data)) {
@@ -56,7 +63,8 @@ export default function HomePage() {
       }
     };
 
-    fetchData();
+    fetchUserProfile();
+    fetchClassrooms();
   }, []);
 
   const handleDelete = (id: number) => {
@@ -70,18 +78,12 @@ export default function HomePage() {
       fd.append("capacity", String(newClassroom.capacity));
       fd.append("location", "");
       fd.append("room_code", "");
-      fd.append("description", newClassroom.type + " 教室");
+      fd.append("description", `${newClassroom.type} 教室`);
+      fd.append("photo", newClassroom.photo)
 
-      const { res, data } = await createClassroom(fd);
+      const { success,status,data } = await createClassroom(fd);
 
-      if (res.ok && data?.id) {
-        if (newClassroom.photo) {
-          const { res: photoRes } = await uploadClassroomPhoto(data.id, newClassroom.photo);
-          if (!photoRes.ok) {
-            console.warn("圖片上傳失敗");
-          }
-        }
-
+      if (success) {
         alert("新增成功！");
         setClassrooms((prev) => [
           ...prev,
@@ -89,7 +91,7 @@ export default function HomePage() {
         ]);
         setShowAddModal(false);
       } else {
-        alert(`新增失敗 (${res.status})：${data.rawText || "未知錯誤"}`);
+        alert(`新增失敗 (${status})：${data || "未知錯誤"}`);
       }
     } catch (err: any) {
       console.error("新增教室失敗:", err);
