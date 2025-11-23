@@ -71,8 +71,6 @@ export default function ProfilePage() {
     try {
       const { res, data } = await logout();
       if (res.ok) {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("user");
         navigate("/");
       } else {
         console.error("Logout failed:", { status: res.status, body: data });
