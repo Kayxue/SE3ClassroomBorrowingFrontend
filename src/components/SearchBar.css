@@ -3,13 +3,15 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 16px;
-  padding: 20px;
-  margin-top: 80px;
+  width: 1000px;
+  gap: 35px;
+  padding: 18px;
+  margin-top: 90px;
+  margin-left: 15px;
   background-color: #ffffff;
   border: 2px solid #0c2a5b;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   color: #0c2a5b;
   font-family: "Noto Sans TC", sans-serif;
 }
@@ -21,7 +23,7 @@
 }
 
 .form-group label {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 15px;
 }
 
