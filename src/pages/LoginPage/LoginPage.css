@@ -62,7 +62,7 @@
 }
 
 /* 訪客模式按鈕 */
-.visitor-btn {
+.btn.visitor-btn {
 	background: #61ab77;
 	color: #fff;
 	width: 100%;
