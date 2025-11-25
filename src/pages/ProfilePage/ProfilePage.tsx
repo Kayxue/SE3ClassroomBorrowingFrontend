@@ -4,6 +4,7 @@ import "./ProfilePage.css";
 import { getProfile } from "../../api/profile";
 import { updatePassword } from "../../api/password";
 import { logout } from "../../api/logout"; 
+import { updateProfile } from "../../api/updateprofile"; 
 
 export default function ProfilePage() {
   const [email, setEmail] = useState("");
@@ -62,8 +63,40 @@ export default function ProfilePage() {
     };
   }, [navigate]);
 
-  const handleSave = () => {
-    alert("已儲存個人資料");
+  // 儲存個人資料
+  const handleSave = async () => {
+    if (!name) {
+      alert("請輸入姓名");
+      return;
+    }
+
+    try {
+      const payload = {
+        email: email ?? null,
+        name: name ?? null,
+        phone_number: phone ?? null,
+        username: null,
+      };
+
+      const { res, data } = await updateProfile(payload);
+
+      if (res.ok) {
+        alert("已儲存個人資料");
+        if (data?.email) setEmail(data.email);
+        if (data?.name) setName(data.name);
+        if (data?.phone_number) setPhone(data.phone_number);
+      } else if (res.status === 401) {
+        alert("未授權，請重新登入");
+        navigate("/");
+      } else if (res.status === 500) {
+        alert("伺服器錯誤，請稍後再試");
+      } else {
+        alert(data?.message || `儲存失敗（status ${res.status}）`);
+      }
+    } catch (err) {
+      console.error("updateProfile error:", err);
+      alert("網路錯誤，無法儲存，請稍後再試");
+    }
   };
 
   // 登出
