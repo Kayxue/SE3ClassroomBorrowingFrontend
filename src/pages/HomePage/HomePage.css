@@ -291,6 +291,79 @@ html, body {
   transform: scale(1.2);
 }
 
+/* 申請部分 */
+.modal-bottom {
+  margin-top: 10px;
+}
+
+/* 訪客登入 */
+.guest-login {
+  text-align: center;
+}
+
+.guest-login button {
+  background-color: #0c2a5b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+/* 一般使用者申請表單 */
+.apply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+  text-align: left;
+  position: relative;
+}
+
+.apply-form label {
+  font-weight: 600;
+  color: #0c2a5b;
+}
+
+.apply-form input,
+.apply-form select,
+.apply-form textarea {
+  width: 95%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.time-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.time-field {
+  flex: 1;
+}
+
+.submit-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.submit-row button {
+  background-color: #0c2a5b;
+  color: #fff;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.admin-msg {
+  text-align: center;
+  color: #666;
+}
 
 
 /* 深色模式 */
