@@ -1,75 +1,78 @@
-import { API_BASE } from "./auth"; 
+import { API_BASE } from "./auth";
 
 export async function getClassroomList() {
-  const token = localStorage.getItem("authToken"); 
+	const res = await fetch(`${API_BASE}/classroom`, {
+		method: "GET",
+	});
 
-  const res = await fetch(`${API_BASE}/classroom`, {
-    method: "GET",
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "", 
-    },
-  });
+	const raw = await res.text().catch(() => "");
+	let data: any = {};
+	if (raw) {
+		try {
+			data = JSON.parse(raw);
+		} catch {
+			data = { rawText: raw };
+		}
+	}
 
-  const raw = await res.text().catch(() => "");
-  let data: any = {};
-  if (raw) {
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      data = { rawText: raw };
-    }
-  }
-
-  return { res, raw, data };
+	return { res, raw, data };
 }
 
-export async function uploadClassroomPhoto(id: string, file: File) {
-  const fd = new FormData();
-  fd.append("photo", file);
+export async function updateClassroomPhoto(id: string, file: File) {
+	const fd = new FormData();
+	fd.append("photo", file);
 
-  const token = localStorage.getItem("authToken") || "";
+	const res = await fetch(`${API_BASE}/classroom/${id}/photo`, {
+		method: "PUT",
+		body: fd,
+    credentials: "include",
+	});
 
-  const res = await fetch(`${API_BASE}/classroom/${id}/photo`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: fd,
-  });
+	if (res.ok) {
+		return { success: true, status: res.status, data: await res.json() };
+	}
 
-  const raw = await res.text().catch(() => "");
-  let data: any = {};
-  if (raw) {
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      data = { rawText: raw };
-    }
-  }
-
-  return { res, raw, data };
+	return { success: false, status: res.status, data: await res.text() };
 }
 
 export async function createClassroom(formData: FormData) {
-  const token = localStorage.getItem("authToken"); 
+	const res = await fetch(`${API_BASE}/classroom`, {
+		method: "POST",
+		body: formData,
+		credentials: "include",
+	});
 
-  const res = await fetch(`${API_BASE}/classroom`, {
-    method: "POST",
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "", 
-    },
-    body: formData,
+	if (res.ok) {
+		return { success: true, status: res.status, data: await res.json() };
+	}
+
+	return { success: false, status: res.status, data: await res.text() };
+}
+
+export async function deleteClassroom(id: string) {
+  const res = await fetch(`${API_BASE}/classroom/${id}`, {
+    method: "DELETE",
   });
 
-  const raw = await res.text().catch(() => "");
-  let data: any = {};
-  if (raw) {
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      data = { rawText: raw };
-    }
+  let data: any = null;
+  try {
+    data = await res.json();
+  } catch {
+    data = {};
   }
 
-  return { res, raw, data };
+  return { res, data };
+}
+
+export async function updateClassroom(id: string, body: any) {
+  const res = await fetch(`${API_BASE}/classroom/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  return { res, data };
 }
