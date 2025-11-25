@@ -1,0 +1,96 @@
+.notification-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+.notification-modal {
+  width: 560px;
+  max-width: 95%;
+  background: #fff;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  position: relative;
+}
+.notification-close {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+.notification-list {
+  max-height: 320px;
+  overflow: auto;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #eee;
+}
+.notification-item:hover { 
+  background: #fafafa; 
+}
+.notification-left { 
+  display: flex; 
+  flex-direction: column;
+}
+.notification-time {
+  font-size: 12px; 
+  color: #666; 
+  margin-top: 4px; 
+}
+
+.notification-status {
+  font-weight: 600; 
+  padding: 6px 10px; 
+  border-radius: 12px; 
+  font-size: 12px; 
+}
+.notification-status.approved {
+  background: #e6ffed; 
+  color: #0b6b2f; 
+  border: 1px solid #c8f2d0; 
+}
+.notification-status.rejected {
+  background: #ffebeb; 
+  color: #a10b0b; 
+  border: 1px solid #f3cfcf; 
+}
+.notification-status.pending {
+  background: #fff7e6; 
+  color: #7a5b00; 
+  border: 1px solid #f1e0b8; 
+}
+
+.notification-detail {
+  margin-top: 14px; 
+  padding-top: 12px; 
+  border-top: 1px solid #eee; 
+}
+.btn {
+  padding: 8px 12px; 
+  border-radius: 6px; 
+  border: 1px solid #ccc; 
+  background: #fff; 
+  cursor: pointer; 
+}
+.btn.primary {
+  background: #0c2a5b; 
+  color: #fff; 
+  border: none; 
+}

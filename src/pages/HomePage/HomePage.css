@@ -26,9 +26,9 @@ html, body {
 }
 
 .login-button {
-  position: fixed;       
-  top: 30px;             
-  left: 1250px;           
+  position: fixed;
+  top: 30px;
+  right: 40px;
   background-color: #0c2a5b;
   color: white;
   border: none;
@@ -226,8 +226,8 @@ html, body {
 
 .icon-group {
   position: fixed;
-  top: 50px;
-  left: 1200px;
+  top: 40px;
+  right: 50px;
   display: flex;
   gap: 40px;
   align-items: center;
@@ -447,4 +447,20 @@ html, body {
   }
 
   
+}
+
+@media (max-width: 900px) {
+  .icon-group {
+    right: 25px;
+    gap: 30px;
+  }
+
+  .login-button {
+    right: 12px;
+    padding: 8px 12px;
+  }
+
+  .homepage-header {
+    left: 40px;
+  }
 }
