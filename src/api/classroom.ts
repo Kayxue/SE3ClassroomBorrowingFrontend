@@ -48,3 +48,31 @@ export async function createClassroom(formData: FormData) {
 
 	return { success: false, status: res.status, data: await res.text() };
 }
+
+export async function deleteClassroom(id: string) {
+  const res = await fetch(`${API_BASE}/classroom/${id}`, {
+    method: "DELETE",
+  });
+
+  let data: any = null;
+  try {
+    data = await res.json();
+  } catch {
+    data = {};
+  }
+
+  return { res, data };
+}
+
+export async function updateClassroom(id: string, body: any) {
+  const res = await fetch(`${API_BASE}/classroom/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  return { res, data };
+}
