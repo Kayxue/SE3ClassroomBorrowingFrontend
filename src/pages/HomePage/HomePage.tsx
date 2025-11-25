@@ -8,6 +8,7 @@ import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/f
 import "./HomePage.css";
 import { getClassroomList, createClassroom, updateClassroomPhoto,updateClassroom,deleteClassroom } from "../../api/classroom";
 import { getProfile } from "../../api/profile";
+import { createReservation } from "../../api/reservation";
 
 
 export default function HomePage() {
@@ -29,6 +30,15 @@ export default function HomePage() {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState<any>(null);
+
+  const [borrowDate, setBorrowDate] = useState("");
+  const [startHour, setStartHour] = useState("00:00");
+  const [endHour, setEndHour] = useState("00:00");
+  const [purpose, setPurpose] = useState("");
+
+  // 控制申請表單 Modal（如果有用）
+  const [showReservationModal, setShowReservationModal] = useState(false);
+
 
   const handleEditClick = (classroom: any) => {
     setEditData({
@@ -161,6 +171,32 @@ export default function HomePage() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setFormData((prev) => ({ ...prev, photo: file }));
+  };
+
+  const handleReservationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const date = borrowDate; 
+      const startTime = `${date}T${startHour}`; 
+      const endTime = `${date}T${endHour}`;
+      const { success, status, data } = await createReservation(
+        selectedClassroom.id,
+        startTime,
+        endTime,
+        purpose
+      );
+
+      if (success) {
+        alert("申請成功！");
+        setShowReservationModal(false);
+      } else {
+        alert(`申請失敗 (${status})：${data}`);
+      }
+    } catch (err: any) {
+      console.error("申請教室失敗：", err);
+      alert("發生錯誤：" + err.message);
+    }
   };
 
   const borrowedList = [
@@ -376,7 +412,68 @@ export default function HomePage() {
                 <p>容納人數：{selectedClassroom.capacity} 人</p>
               </div>
             </div>
-            <div className="modal-bottom"></div>
+            <div className="modal-bottom">
+              {!isLoggedIn ? (
+                // --- 訪客模式 ---
+                <div className="guest-login">
+                  <button onClick={() => navigate("/")}>登入以申請教室</button>
+                </div>
+              ) : !isAdmin ? (
+                // --- 一般使用者登入模式 ---
+                <form className="apply-form" onSubmit={handleReservationSubmit}>
+                  <label>借用日期：</label>
+                  <input type="date" value={borrowDate} onChange={(e) => setBorrowDate(e.target.value)} />
+
+                  <div className="time-row">
+                    <div className="time-field">
+                      <label>開始時間：</label>
+                      <select value={startHour} onChange={(e) => setStartHour(e.target.value)}>
+                        {Array.from({ length: 24 }).map((_, i) => {
+                          const hour = i.toString().padStart(2, "0");
+                          return (
+                            <option key={i} value={`${hour}:00`}>
+                              {hour}:00
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+
+                    <div className="time-field">
+                      <label>結束時間：</label>
+                      <select value={endHour} onChange={(e) => setEndHour(e.target.value)}>
+                        {Array.from({ length: 24 }).map((_, i) => {
+                          const hour = i.toString().padStart(2, "0");
+                          return (
+                            <option key={i} value={`${hour}:00`}>
+                              {hour}:00
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  </div>
+
+                  <label>申請理由：</label>
+                  <textarea
+                    rows={3}
+                    placeholder="請輸入教室使用目的"
+                    value={purpose}
+                    onChange={(e) => setPurpose(e.target.value)}
+                  />
+
+                  <div className="submit-row">
+                    <button type="submit">提出申請</button>
+                  </div>
+                </form>
+
+              ) : (
+                // --- 管理員模式 ---
+                <p className="admin-msg">管理員無需申請教室。</p>
+              )}
+            </div>
+
+
           </div>
         </div>
       )}
