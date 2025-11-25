@@ -6,6 +6,7 @@ import unknownPic from "../../assets/unknowpic.jpg";
 import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./HomePage.css";
+import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
 import { getClassroomList, createClassroom, updateClassroomPhoto } from "../../api/classroom";
 import { getProfile } from "../../api/profile";
 
@@ -14,6 +15,8 @@ export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false); 
+  const [showNotifications, setShowNotifications] = useState(false); 
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -128,7 +131,11 @@ export default function HomePage() {
                 onClick={() => setEditMode(!editMode)}
               />
             )}
-            <FaEnvelope className="icon-button" title="通知" />
+            <FaEnvelope
+              className="icon-button"
+              title="通知"
+              onClick={() => setShowNotifications(true)} // 通知彈窗
+            />
             <FaUserCircle
               className="icon-button"
               title="個人資料"
@@ -141,6 +148,11 @@ export default function HomePage() {
           </button>
         )}
       </header>
+
+      {/* 通知彈窗*/}
+      {showNotifications && (
+        <UserNotificationPage onClose={() => setShowNotifications(false)} />
+      )}
 
       {isLoggedIn && (
         <aside className="sidebar">
