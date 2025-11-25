@@ -27,5 +27,14 @@ export async function register(payload: {
       data = { rawText: raw };
     }
   }
+
+  if (!res.ok) {
+    if (res.status === 500 && raw.includes("Failed to create user")) {
+      data.message = data.message ?? "此email已註冊!!";
+    } else {
+      data.message = data.message ?? `註冊失敗（status ${res.status}）`;
+    }
+  }
+
   return { res, raw, data };
 }

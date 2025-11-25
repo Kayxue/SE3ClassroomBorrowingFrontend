@@ -276,7 +276,7 @@ html, body {
   position: relative;
 }
 
-/* 刪除按鈕樣式 */
+/* 刪除按鈕 */
 .delete-icon {
   position: absolute;
   top: 8px;
@@ -321,12 +321,12 @@ html, body {
 
   .modal-content {
     background: #1f1f1f;
-    color: #ffffff;
+    color: #0c2a5b;
     border: 2px solid #cfd8ff;
   }
 
   .modal-close {
-    color: #ffffff;
+    color: #0c2a5b;
   }
 
   .modal-thumbnail {

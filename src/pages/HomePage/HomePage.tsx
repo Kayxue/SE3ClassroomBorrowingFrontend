@@ -7,6 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./HomePage.css";
 import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
+import { getClassroomList, createClassroom, updateClassroomPhoto } from "../../api/classroom";
+import { getProfile } from "../../api/profile";
+
 
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,45 +17,94 @@ export default function HomePage() {
   const [editMode, setEditMode] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false); 
   const [showNotifications, setShowNotifications] = useState(false); 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    type: "普通教室",
+    capacity: "20",
+    photo: null as File | null, 
+  });
 
   const navigate = useNavigate();
-
-  const handleSearch = (filters: any) => {
-    console.log("查詢條件：", filters);
-  };
-
   const [selectedClassroom, setSelectedClassroom] = useState<any>(null);
-  const [classrooms, setClassrooms] = useState([
-    { id: 1, name: "103 教室", type: "普通教室", capacity: 60, imageUrl: unknownPic },
-    { id: 2, name: "105 教室", type: "普通教室", capacity: 60, imageUrl: unknownPic },
-    { id: 3, name: "201 教室", type: "電腦教室", capacity: 20, imageUrl: unknownPic },
-    { id: 4, name: "202 教室", type: "自習教室", capacity: 30, imageUrl: unknownPic },
-    { id: 5, name: "203 教室", type: "電腦教室", capacity: 40, imageUrl: unknownPic },
-    { id: 6, name: "303 教室", type: "普通教室", capacity: 50, imageUrl: unknownPic },
-  ]);
+  const [classrooms, setClassrooms] = useState<any[]>([]);
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      setIsLoggedIn(true);
-      const parsed = JSON.parse(user);
-      if (parsed.role === "Admin") setIsAdmin(true);
-    } else {
-      setIsLoggedIn(false);
-    }
+    const fetchUserProfile = async () => {
+      try {
+        const { res, data } = await getProfile();
+        console.log(res.status)
+        if (res.ok && data) {
+          setIsLoggedIn(true);
+          if (data.role === "Admin") {
+            setIsAdmin(true);
+          }
+        } 
+      } catch (err) {
+        console.error("抓取使用者資料錯誤：", err);
+      }
+    };
+
+    const fetchClassrooms = async () => {
+      try {
+        const { res, data } = await getClassroomList();
+        if (res.ok && Array.isArray(data)) {
+          setClassrooms(
+            data.map((item: any) => ({
+              id: item.id,
+              name: item.purpose || `教室 ${item.id}`,
+              type: item.status || "未分類",
+              capacity: item.capacity || 0,
+              imageUrl: unknownPic,
+            }))
+          );
+        } else {
+          console.warn("無法取得教室資料：", data);
+        }
+      } catch (err) {
+        console.error("抓取教室資料錯誤：", err);
+      }
+    };
+
+    fetchUserProfile();
+    fetchClassrooms();
   }, []);
 
   const handleDelete = (id: number) => {
     setClassrooms((prev) => prev.filter((c) => c.id !== id));
   };
 
-  const handleAddClassroom = (newClassroom: any) => {
-    const newId = classrooms.length + 1;
-    setClassrooms([
-      ...classrooms,
-      { id: newId, ...newClassroom, imageUrl: unknownPic },
-    ]);
-    setShowAddModal(false);
+  const handleAddClassroom = async (newClassroom: any) => {
+    try {
+      const fd = new FormData();
+      fd.append("name", newClassroom.name);
+      fd.append("capacity", String(newClassroom.capacity));
+      fd.append("location", "");
+      fd.append("room_code", "");
+      fd.append("description", `${newClassroom.type} 教室`);
+      fd.append("photo", newClassroom.photo)
+
+      const { success,status,data } = await createClassroom(fd);
+
+      if (success) {
+        alert("新增成功！");
+        setClassrooms((prev) => [
+          ...prev,
+          { id: data.id, ...newClassroom, imageUrl: unknownPic },
+        ]);
+        setShowAddModal(false);
+      } else {
+        alert(`新增失敗 (${status})：${data || "未知錯誤"}`);
+      }
+    } catch (err: any) {
+      console.error("新增教室失敗:", err);
+      alert(`發生錯誤：${err.message || err}`);
+    }
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, photo: file }));
   };
 
   const borrowedList = [
@@ -60,6 +112,10 @@ export default function HomePage() {
     { id: 2, name: "204 教室", category: "電腦教室" },
     { id: 3, name: "305 教室", category: "演講廳" },
   ];
+
+  const handleSearch = (filters: any) => {
+    console.log("查詢條件：", filters);
+  };
 
   return (
     <div className="homepage-container">
@@ -130,7 +186,6 @@ export default function HomePage() {
               <div onClick={() => setSelectedClassroom(c)}>
                 <ClassroomCard name={c.name} imageUrl={c.imageUrl} />
               </div>
-
               {editMode && (
                 <FaTrash
                   className="delete-icon"
@@ -143,6 +198,7 @@ export default function HomePage() {
         </div>
       </main>
 
+      {/* 新增教室彈窗 */}
       {showAddModal && (
         <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -152,46 +208,28 @@ export default function HomePage() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const form = e.target as any;
-                const newClassroom = {
-                  name: form.name.value,
-                  type: form.type.value,
-                  capacity: Number(form.capacity.value),
-                };
-                handleAddClassroom(newClassroom);
+                handleAddClassroom(formData);
               }}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "12px",
-              }}
+              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
             >
               <label>
                 教室名稱：
                 <input
                   type="text"
-                  name="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="請輸入教室名稱"
                   required
-                  style={{
-                    width: "90%",
-                    padding: "8px",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc",
-                  }}
+                  style={{ width: "90%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
                 />
               </label>
 
               <label>
                 教室類型：
                 <select
-                  name="type"
-                  style={{
-                    width: "95%",
-                    padding: "8px",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc",
-                  }}
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  style={{ width: "95%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
                 >
                   <option value="普通教室">普通教室</option>
                   <option value="電腦教室">電腦教室</option>
@@ -203,13 +241,9 @@ export default function HomePage() {
               <label>
                 容納人數：
                 <select
-                  name="capacity"
-                  style={{
-                    width: "95%",
-                    padding: "8px",
-                    borderRadius: "6px",
-                    border: "1px solid #ccc",
-                  }}
+                  value={formData.capacity}
+                  onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                  style={{ width: "95%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
                 >
                   <option value="20">20 人</option>
                   <option value="30">30 人</option>
@@ -218,6 +252,20 @@ export default function HomePage() {
                   <option value="60">60 人</option>
                 </select>
               </label>
+
+              <label>
+                上傳圖片：
+                <input
+                  type="file"
+                  name="photo"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setFormData({ ...formData, photo: e.target.files?.[0] || null })
+                  }
+                  style={{ width: "90%", padding: "8px" }}
+                />
+              </label>
+
 
               <button
                 type="submit"
