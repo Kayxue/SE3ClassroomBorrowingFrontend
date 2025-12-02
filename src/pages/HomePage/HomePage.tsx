@@ -30,6 +30,9 @@ export default function HomePage() {
   const [selectedClassroom, setSelectedClassroom] = useState<any>(null);
   const [classrooms, setClassrooms] = useState<any[]>([]);
 
+  // 搜尋重置與過濾
+  const [allClassrooms, setAllClassrooms] = useState<any[]>([]);
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState<any>(null);
 
@@ -70,6 +73,9 @@ export default function HomePage() {
         setClassrooms((prev) =>
           prev.map((c) => (c.id === editData.id ? { ...c, ...editData } : c))
         );
+        setAllClassrooms((prev) =>
+          prev.map((c) => (c.id === editData.id ? { ...c, ...editData } : c))
+        );
         setShowEditModal(false);
       } else {
         const errText = await res.text();
@@ -102,16 +108,17 @@ export default function HomePage() {
       try {
         const { res, data } = await getClassroomList();
         if (res.ok && Array.isArray(data)) {
-          setClassrooms(
-            data.map((item: any) => ({
-              id: item.id,
-              name: item.name || `教室 ${item.id}`,
-              type: item.description || "未分類",
-              location: item.location || "未知地點",
-              capacity: item.capacity || 0,
-              imageUrl: unknownPic,
-            }))
-          );
+          const mapped = data.map((item: any) => ({
+            id: item.id,
+            name: item.name || `教室 ${item.id}`,
+            type: item.description || "未分類",
+            location: item.location || "未知地點",
+            capacity: item.capacity || 0,
+            imageUrl: unknownPic,
+            __raw: item,
+          }));
+          setAllClassrooms(mapped);
+          setClassrooms(mapped);
         } else {
           console.warn("無法取得教室資料：", data);
         }
@@ -131,6 +138,7 @@ export default function HomePage() {
       if (res.ok) {
         alert("教室刪除成功！");
         setClassrooms((prev) => prev.filter((c) => c.id !== id));
+        setAllClassrooms((prev) => prev.filter((c) => c.id !== id));
       } else if (res.status === 404) {
         alert("找不到該教室，可能已被刪除");
       } else {
@@ -155,10 +163,9 @@ export default function HomePage() {
 
       if (success) {
         alert("新增成功！");
-        setClassrooms((prev) => [
-          ...prev,
-          { id: data.id, ...newClassroom, imageUrl: unknownPic },
-        ]);
+        const created = { id: data.id, ...newClassroom, imageUrl: unknownPic, __raw: data, type: newClassroom.type };
+        setClassrooms((prev) => [...prev, created]);
+        setAllClassrooms((prev) => [...prev, created]);
         setShowAddModal(false);
       } else {
         alert(`新增失敗 (${status})：${data || "未知錯誤"}`);
@@ -214,8 +221,41 @@ export default function HomePage() {
     { id: 3, name: "305 教室", category: "演講廳" },
   ];
 
+  // 搜尋處理
   const handleSearch = (filters: any) => {
+    const { time, type, capacity, onlyAvailable } = filters;
     console.log("查詢條件：", filters);
+
+    let result = allClassrooms.slice();
+
+    // 類別過濾
+    if (type) {
+      result = result.filter((c) => (c.type || "").toString() === type);
+    }
+
+    // 容納人數過濾
+    if (capacity) {
+      if (capacity === "60以上") {
+        result = result.filter((c) => Number(c.capacity) >= 60);
+      } else {
+        const capNum = Number(capacity);
+        if (!isNaN(capNum)) {
+          result = result.filter((c) => Number(c.capacity) >= capNum);
+        }
+      }
+    }
+
+    // "時段"與"是否可借用"待更新
+    if (time || onlyAvailable) {
+      if (onlyAvailable) {
+        alert('「只顯示可借用教室」待更新。');
+      }
+      if (time) {
+        console.log('時段條件待更新:', time);
+      }
+    }
+
+    setClassrooms(result);
   };
 
   return (
@@ -524,12 +564,22 @@ export default function HomePage() {
                             c.id === editData.id ? { ...c, imageUrl: updatedUrl } : c
                           )
                         );
+                        setAllClassrooms((prev) =>
+                          prev.map((c) =>
+                            c.id === editData.id ? { ...c, imageUrl: updatedUrl } : c
+                          )
+                        );
                       }
                     }
                     alert("教室資料已更新！");
                     setShowEditModal(false);
 
                     setClassrooms((prev) =>
+                      prev.map((c) =>
+                        c.id === editData.id ? { ...c, ...editData } : c
+                      )
+                    );
+                    setAllClassrooms((prev) =>
                       prev.map((c) =>
                         c.id === editData.id ? { ...c, ...editData } : c
                       )
