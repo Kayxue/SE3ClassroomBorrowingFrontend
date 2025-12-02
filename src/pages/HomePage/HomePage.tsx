@@ -15,7 +15,8 @@ export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false); 
+  const [showNotifications, setShowNotifications] = useState(false); 
   const [formData, setFormData] = useState({
     name: "",
     type: "普通教室",
