@@ -71,10 +71,18 @@ export default function HomePage() {
       if (res.ok) {
         alert("教室更新成功！");
         setClassrooms((prev) =>
-          prev.map((c) => (c.id === editData.id ? { ...c, ...editData } : c))
+          prev.map((c) =>
+            c.id === editData.id
+              ? { ...c, ...editData, type: editData.description || c.type }
+              : c
+          )
         );
         setAllClassrooms((prev) =>
-          prev.map((c) => (c.id === editData.id ? { ...c, ...editData } : c))
+          prev.map((c) =>
+            c.id === editData.id
+              ? { ...c, ...editData, type: editData.description || c.type }
+              : c
+          )
         );
         setShowEditModal(false);
       } else {
@@ -296,7 +304,7 @@ export default function HomePage() {
         <UserNotificationPage onClose={() => setShowNotifications(false)} />
       )}
 
-      {isLoggedIn && (
+      {isLoggedIn && !isAdmin ? (
         <aside className="sidebar">
           <h2 className="sidebar-title">待還教室列表</h2>
           <div className="borrow-list">
@@ -308,7 +316,7 @@ export default function HomePage() {
             ))}
           </div>
         </aside>
-      )}
+      ) : null}
 
       <div className="search-bar-container">
         <SearchBar onSearch={handleSearch} />
@@ -562,12 +570,12 @@ export default function HomePage() {
                         const updatedUrl = URL.createObjectURL(editData.photo);
                         setClassrooms((prev) =>
                           prev.map((c) =>
-                            c.id === editData.id ? { ...c, imageUrl: updatedUrl } : c
+                            c.id === editData.id ? { ...c, imageUrl: updatedUrl, type: editData.description || c.type } : c
                           )
                         );
                         setAllClassrooms((prev) =>
                           prev.map((c) =>
-                            c.id === editData.id ? { ...c, imageUrl: updatedUrl } : c
+                            c.id === editData.id ? { ...c, imageUrl: updatedUrl, type: editData.description || c.type } : c
                           )
                         );
                       }
@@ -577,12 +585,12 @@ export default function HomePage() {
 
                     setClassrooms((prev) =>
                       prev.map((c) =>
-                        c.id === editData.id ? { ...c, ...editData } : c
+                        c.id === editData.id ? { ...c, ...editData, type: editData.description || c.type } : c
                       )
                     );
                     setAllClassrooms((prev) =>
                       prev.map((c) =>
-                        c.id === editData.id ? { ...c, ...editData } : c
+                        c.id === editData.id ? { ...c, ...editData, type: editData.description || c.type } : c
                       )
                     );
                   } else {
