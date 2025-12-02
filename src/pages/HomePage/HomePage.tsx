@@ -347,11 +347,11 @@ export default function HomePage() {
               <label>
                 教室類型：
                 <select
-                  value={editData?.description?.replace(" 教室", "") || ""}
+                  value={formData.type}
                   onChange={(e) =>
-                    setEditData({
-                      ...editData,
-                      description: e.target.value ,
+                    setFormData({
+                      ...formData,
+                      type: e.target.value,
                     })
                   }
                   style={{ width: "95%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
@@ -568,11 +568,11 @@ export default function HomePage() {
               <label>
                 教室類型：
                 <select
-                  value={formData.type}
+                  value={editData.description || ""}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      type: e.target.value,
+                    setEditData({
+                      ...editData,
+                      description: e.target.value,
                     })
                   }
                 >
