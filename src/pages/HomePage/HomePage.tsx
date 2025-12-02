@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo2.svg";
 import ClassroomCard from "../../components/Classroomcard";
 import SearchBar from "../../components/SearchBar";
 import unknownPic from "../../assets/unknowpic.jpg";
@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./HomePage.css";
 import { getClassroomList, createClassroom, updateClassroomPhoto,updateClassroom,deleteClassroom } from "../../api/classroom";
+import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
 import { getProfile } from "../../api/profile";
 import { createReservation } from "../../api/reservation";
 
@@ -141,7 +142,6 @@ export default function HomePage() {
     }
   };
 
-
   const handleAddClassroom = async (newClassroom: any) => {
     try {
       const fd = new FormData();
@@ -208,7 +208,6 @@ export default function HomePage() {
     }
   };
 
-
   const borrowedList = [
     { id: 1, name: "101 教室", category: "普通教室" },
     { id: 2, name: "204 教室", category: "電腦教室" },
@@ -233,7 +232,11 @@ export default function HomePage() {
                 onClick={() => setEditMode(!editMode)}
               />
             )}
-            <FaEnvelope className="icon-button" title="通知" />
+            <FaEnvelope
+              className="icon-button"
+              title="通知"
+              onClick={() => setShowNotifications(true)} // 通知彈窗
+            />
             <FaUserCircle
               className="icon-button"
               title="個人資料"
@@ -246,6 +249,11 @@ export default function HomePage() {
           </button>
         )}
       </header>
+
+      {/* 通知彈窗*/}
+      {showNotifications && (
+        <UserNotificationPage onClose={() => setShowNotifications(false)} />
+      )}
 
       {isLoggedIn && (
         <aside className="sidebar">
@@ -621,7 +629,6 @@ export default function HomePage() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
