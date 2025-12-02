@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./HomePage.css";
 import { getClassroomList, createClassroom, updateClassroomPhoto,updateClassroom,deleteClassroom } from "../../api/classroom";
-import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
 import { getProfile } from "../../api/profile";
 import { createReservation } from "../../api/reservation";
 
@@ -16,8 +15,6 @@ export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false); 
-  const [showNotifications, setShowNotifications] = useState(false); 
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -143,6 +140,7 @@ export default function HomePage() {
     }
   };
 
+
   const handleAddClassroom = async (newClassroom: any) => {
     try {
       const fd = new FormData();
@@ -171,17 +169,25 @@ export default function HomePage() {
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setFormData((prev) => ({ ...prev, photo: file }));
-  };
+      const file = e.target.files?.[0] || null;
+      setFormData((prev) => ({ ...prev, photo: file }));
+    };
 
-  const handleReservationSubmit = async (e: React.FormEvent) => {
+    const handleReservationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const date = borrowDate; 
-      const startTime = `${date}T${startHour}`; 
-      const endTime = `${date}T${endHour}`;
+      const date = borrowDate;
+      const startTime = `${date}T${startHour}:00`;
+      const endTime = `${date}T${endHour}:00`;
+
+      console.log("送出的 JSON：", {
+        classroom_id: selectedClassroom.id,
+        start_time: startTime,
+        end_time: endTime,
+        purpose,
+      });
+
       const { success, status, data } = await createReservation(
         selectedClassroom.id,
         startTime,
@@ -200,6 +206,7 @@ export default function HomePage() {
       alert("發生錯誤：" + err.message);
     }
   };
+
 
   const borrowedList = [
     { id: 1, name: "101 教室", category: "普通教室" },
@@ -225,11 +232,7 @@ export default function HomePage() {
                 onClick={() => setEditMode(!editMode)}
               />
             )}
-            <FaEnvelope
-              className="icon-button"
-              title="通知"
-              onClick={() => setShowNotifications(true)} // 通知彈窗
-            />
+            <FaEnvelope className="icon-button" title="通知" />
             <FaUserCircle
               className="icon-button"
               title="個人資料"
@@ -242,11 +245,6 @@ export default function HomePage() {
           </button>
         )}
       </header>
-
-      {/* 通知彈窗*/}
-      {showNotifications && (
-        <UserNotificationPage onClose={() => setShowNotifications(false)} />
-      )}
 
       {isLoggedIn && (
         <aside className="sidebar">
@@ -340,7 +338,7 @@ export default function HomePage() {
               <label>
                 教室類型：
                 <select
-                  value={editData.description.replace(" 教室", "")}
+                  value={editData?.description?.replace(" 教室", "") || ""}
                   onChange={(e) =>
                     setEditData({
                       ...editData,
