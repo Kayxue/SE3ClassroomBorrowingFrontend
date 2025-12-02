@@ -231,6 +231,12 @@ export default function ProfilePage() {
           </button>
         </div>
 
+        <div style={{ marginTop: 5 }}>
+          <button className="btn back-btn" onClick={() => navigate("/home")}>
+            返回
+          </button>
+        </div>
+
         {/* 變更密碼 */}
         {showChangePwdModal && (
           <div className="modal-overlay" onClick={() => setShowChangePwdModal(false)}>

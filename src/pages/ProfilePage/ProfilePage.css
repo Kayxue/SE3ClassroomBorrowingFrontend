@@ -126,6 +126,17 @@
   background: #b94a48;
 }
 
+.btn.back-btn {
+  padding: 5px 10px;
+  background: none;
+  color: #3e2c71;
+  border: none;
+  text-decoration-line: underline;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
 .btn.records-btn {
   padding: 13px 20px;
   background: #7e78b3;
