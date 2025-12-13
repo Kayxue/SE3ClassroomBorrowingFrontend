@@ -82,6 +82,24 @@
   padding-top: 12px; 
   border-top: 1px solid #eee; 
 }
+
+.notification-list {
+  max-height: 240px;  
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 8px;
+  scrollbar-width: thin;
+}
+
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
 .btn {
   padding: 8px 12px; 
   border-radius: 6px; 
@@ -93,4 +111,266 @@
   background: #0c2a5b; 
   color: #fff; 
   border: none; 
+}
+
+.notification-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.review-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn.approve {
+  background-color: #315633;
+  color: white;
+}
+
+.btn.reject {
+  background-color: #76211e;
+  color: white;
+}
+
+.btn.back {
+  background-color: #e0e0e0;
+}
+
+.edit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.edit-modal {
+  background-color: #fff;
+  color: #000;
+  padding: 24px 28px;
+  border: 3px solid #1b2f6b;
+  border-radius: 16px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  font-family: "Noto Sans TC", sans-serif;
+}
+
+.edit-modal h4 {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: #1b2f6b;
+}
+
+.edit-modal label {
+  font-weight: bold;
+  color: #1b2f6b;
+  margin-top: 12px;
+}
+
+.edit-modal select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.edit-modal input,
+.edit-modal textarea {
+  width: 95%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.edit-modal select {
+  cursor: pointer;
+}
+
+/* --- 時間同列 --- */
+.edit-time-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.time-select-group {
+  flex: 1;
+}
+
+/* --- 多行輸入 --- */
+.edit-modal textarea {
+  min-height: 70px;
+  resize: none;
+  margin-top: 4px;
+}
+
+.edit-modal-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px; 
+  margin-top: 20px;
+}
+
+.btn.approve {
+  background-color: #1b2f6b;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.btn.approve:hover {
+  background-color: #1b2f6b;
+}
+
+.cancel-btn {
+  background-color: #d9d9d9;
+  color: #333;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.cancel-btn:hover {
+  background-color: #bfbfbf;
+}
+
+.btn.edit {
+  background-color: #1b2f6b;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn.edit:hover {
+  background-color: #1b2f6b;
+  transform: scale(1.05);
+}
+
+.btn.edit:active {
+  background-color: #1b2f6b;
+  transform: scale(0.98);
+}
+
+
+
+@media (prefers-color-scheme: dark) {
+  .notification-modal {
+    background-color: #1e1e2f;
+    color: #f2f2f2;
+    border: 1px solid #333;
+  }
+
+  .notification-modal h3,
+  .notification-modal h4 {
+    color: #ffffff;
+  }
+
+  .notification-item {
+    background-color: #2c2c3a;
+    border: 1px solid #3d3d4f;
+  }
+
+  .notification-item:hover {
+    background-color: #3a3a4f;
+  }
+
+  .notification-status.approved {
+    background-color: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+  }
+  .notification-status.rejected {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+  }
+  .notification-status.pending {
+    background-color: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+  }
+
+  .btn.approve {
+    background-color: #2ecc71;
+    color: #fff;
+  }
+
+  .btn.reject {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+
+  .btn.back {
+    background-color: #555;
+    color: #fff;
+  }
+
+  .notification-modal {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  }
+
+  .notification-list::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .notification-list::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .edit-modal {
+    background-color: #2b2b2b; 
+    color: #ffffff; 
+  }
+
+  .edit-modal input[type="date"],
+  .edit-modal select,
+  .edit-modal textarea {
+    background-color: #3a3a3a; 
+    color: #ffffff;
+  }
+
+  .edit-modal input::placeholder,
+  .edit-modal textarea::placeholder {
+    color: #cfcfcf;
+  }
+
+  .edit-modal select option {
+    background-color: #2b2b2b;
+    color: #ffffff;
+  }
+
+  .edit-modal label {
+    color: #f0f0f0;
+  }
+
+  .btn.approve {
+    background-color: #8aa4ff; 
+    color: white;
+  }
+
+  .btn.approve:hover {
+    background-color: #8aa4ff;
+    transform: scale(1.05);
+  }
+
+  .edit-modal h4 {
+  color: #ffffff; 
+}
 }

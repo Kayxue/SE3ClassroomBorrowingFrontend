@@ -284,7 +284,7 @@ export default function HomePage() {
             <FaEnvelope
               className="icon-button"
               title="通知"
-              onClick={() => setShowNotifications(true)} // 通知彈窗
+              onClick={() => setShowNotifications(true)} 
             />
             <FaUserCircle
               className="icon-button"
