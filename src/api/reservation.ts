@@ -79,3 +79,24 @@ export async function reviewReservation(
   }
 }
 
+export const updateReservation = async (id: string, body: any) => {
+  try {
+    const res = await fetch(`/api/reservation/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    let data = null;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    return { success: res.ok, data };
+  } catch (err) {
+    console.error("更新申請錯誤：", err);
+    return { success: false, data: null };
+  }
+};
