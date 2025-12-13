@@ -94,3 +94,30 @@
   color: #fff; 
   border: none; 
 }
+
+.notification-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.review-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn.approve {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.btn.reject {
+  background-color: #d9534f;
+  color: white;
+}
+
+.btn.back {
+  background-color: #e0e0e0;
+}

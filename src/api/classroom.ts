@@ -76,3 +76,17 @@ export async function updateClassroom(id: string, body: any) {
   const data = await res.json().catch(() => ({}));
   return { res, data };
 }
+
+
+export async function getClassroomById(id: string) {
+  const res = await fetch(`${API_BASE}/classroom/${id}`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (res.ok) {
+    return { success: true, data: await res.json() };
+  } else {
+    return { success: false, status: res.status, data: await res.text() };
+  }
+}
