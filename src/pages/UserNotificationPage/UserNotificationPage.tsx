@@ -37,7 +37,6 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
   const [isAdmin, setIsAdmin] = useState(false);
   const [filterStatus, setFilterStatus] = useState("All");
 
-  // 抓使用者資料
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -56,7 +55,6 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
     fetchUserProfile();
   }, []);
 
-  // 抓取申請資料
   const fetchData = async (statusFilter = "All") => {
     setLoading(true);
     let result;
@@ -77,6 +75,7 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
       if (success && Array.isArray(data)) {
         const myId = localStorage.getItem("user_id");
         const filtered = role === "Admin" ? data : data.filter((n: any) => n.user_id === myId);
+        filtered.sort((a: any, b: any) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
 
         const enriched = await Promise.all(
           filtered.map(async (n: any) => {
@@ -104,7 +103,6 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
     fetchData();
   }, [isAdmin]);
 
-  // 管理員審核
   const handleReview = async (status: "Approved" | "Rejected") => {
     if (!selected) return;
     let rejectReason: string | null = null;
