@@ -30,7 +30,7 @@ export async function createReservation(
 }
 
 export async function getAllReservations() {
-  const res = await fetch(`${API_BASE}/reservation/all`, {
+  const res = await fetch(`${API_BASE}/reservation/self`, {
     method: "GET",
     credentials: "include",
   });
@@ -43,7 +43,21 @@ export async function getAllReservations() {
 }
 
 export async function getReservationsByStatus(status: string) {
-  const res = await fetch(`${API_BASE}/reservation/status/${status}`, {
+  const res = await fetch(`${API_BASE}/reservation/self/list?status=${status}`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  if (res.ok) {
+    return { success: true, data: await res.json() };
+  } else {
+    return { success: false, status: res.status, data: await res.text() };
+  }
+}
+
+export async function getAdminReservations(status?: string) {
+  const query = status && status !== "All" ? `?status=${status}` : "";
+  const res = await fetch(`${API_BASE}/reservation/admin/list${query}`, {
     method: "GET",
     credentials: "include",
   });
@@ -81,9 +95,10 @@ export async function reviewReservation(
 
 export const updateReservation = async (id: string, body: any) => {
   try {
-    const res = await fetch(`/api/reservation/${id}`, {
+    const res = await fetch(`${API_BASE}/reservation/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(body),
     });
 
@@ -98,5 +113,19 @@ export const updateReservation = async (id: string, body: any) => {
   } catch (err) {
     console.error("更新申請錯誤：", err);
     return { success: false, data: null };
+  }
+};
+
+export const deleteReservation = async (id: string) => {
+  try {
+    const res = await fetch(`${API_BASE}/reservation/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    return { success: res.ok };
+  } catch (err) {
+    console.error("刪除申請錯誤：", err);
+    return { success: false };
   }
 };

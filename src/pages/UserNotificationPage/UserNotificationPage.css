@@ -271,6 +271,53 @@
   transform: scale(0.98);
 }
 
+/* 讓整個彈窗本身成為定位容器 */
+.edit-modal {
+  position: relative;
+  background-color: #fff;
+  color: #1b2a5a;
+  border-radius: 10px;
+  padding: 20px 30px;
+  width: 400px;
+  max-width: 90%;
+}
+
+/* 標題列排版 */
+.edit-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+/* 標題樣式 */
+.edit-modal-title {
+  color: #1b2a5a;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* 讓垃圾桶只在彈窗右上角 */
+.delete-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 5px 10px 0 0;
+  color: #e74c3c;
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease;
+  z-index: 5; /* 確保在標題上層 */
+}
+
+.delete-icon:hover {
+  color: #ff6b6b;
+  transform: scale(1.15);
+}
+
+
+
 
 
 @media (prefers-color-scheme: dark) {
