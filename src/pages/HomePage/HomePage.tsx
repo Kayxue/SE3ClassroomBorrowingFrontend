@@ -3,13 +3,15 @@ import logo from "../../assets/logo2.svg";
 import ClassroomCard from "../../components/Classroomcard";
 import SearchBar from "../../components/SearchBar";
 import unknownPic from "../../assets/unknowpic.jpg";
+import AdminReservationList from "../../components/AdminReservationList";
 import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./HomePage.css";
 import { getClassroomList, createClassroom, updateClassroomPhoto,updateClassroom,deleteClassroom } from "../../api/classroom";
 import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
 import { getProfile } from "../../api/profile";
-import { createReservation } from "../../api/reservation";
+import { createReservation,getAdminReservations } from "../../api/reservation";
+
 
 
 export default function HomePage() {
@@ -25,6 +27,7 @@ export default function HomePage() {
     location: "",
     photo: null as File | null, 
   });
+  const [reservations, setReservations] = useState<any[]>([]);
 
   const navigate = useNavigate();
   const [selectedClassroom, setSelectedClassroom] = useState<any>(null);
@@ -91,6 +94,8 @@ export default function HomePage() {
           setIsLoggedIn(true);
           if (data.role === "Admin") {
             setIsAdmin(true);
+            const r = await getAdminReservations("All");
+            if (r.success) setReservations(r.data.items || []);
           }
         } 
       } catch (err) {
@@ -418,6 +423,7 @@ export default function HomePage() {
         <div className="modal-overlay" onClick={() => setSelectedClassroom(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelectedClassroom(null)}>×</button>
+
             <div className="modal-top">
               <img
                 src={selectedClassroom.imageUrl}
@@ -431,22 +437,28 @@ export default function HomePage() {
                 <p>容納人數：{selectedClassroom.capacity} 人</p>
               </div>
             </div>
+
             <div className="modal-bottom">
               {!isLoggedIn ? (
-                // --- 訪客模式 ---
                 <div className="guest-login">
                   <button onClick={() => navigate("/")}>登入以申請教室</button>
                 </div>
               ) : !isAdmin ? (
-                // --- 一般使用者登入模式 ---
+                // --- 使用者申請教室表單 ---
                 <form className="apply-form" onSubmit={handleReservationSubmit}>
                   <label>借用日期：</label>
-                  <input type="date" value={borrowDate} onChange={(e) => setBorrowDate(e.target.value)} />
-
+                  <input
+                    type="date"
+                    value={borrowDate}
+                    onChange={(e) => setBorrowDate(e.target.value)}
+                  />
                   <div className="time-row">
                     <div className="time-field">
                       <label>開始時間：</label>
-                      <select value={startHour} onChange={(e) => setStartHour(e.target.value)}>
+                      <select
+                        value={startHour}
+                        onChange={(e) => setStartHour(e.target.value)}
+                      >
                         {Array.from({ length: 24 }).map((_, i) => {
                           const hour = i.toString().padStart(2, "0");
                           return (
@@ -457,10 +469,12 @@ export default function HomePage() {
                         })}
                       </select>
                     </div>
-
                     <div className="time-field">
                       <label>結束時間：</label>
-                      <select value={endHour} onChange={(e) => setEndHour(e.target.value)}>
+                      <select
+                        value={endHour}
+                        onChange={(e) => setEndHour(e.target.value)}
+                      >
                         {Array.from({ length: 24 }).map((_, i) => {
                           const hour = i.toString().padStart(2, "0");
                           return (
@@ -485,17 +499,16 @@ export default function HomePage() {
                     <button type="submit">提出申請</button>
                   </div>
                 </form>
-
               ) : (
-                // --- 管理員模式 ---
-                <p className="admin-msg">管理員無需申請教室。</p>
+                // --- 管理員模式：申請清單 + 篩選 ---
+                <AdminReservationList classroomId={selectedClassroom.id} />
               )}
             </div>
-
-
           </div>
         </div>
       )}
+
+
 
       {showEditModal && editData && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>

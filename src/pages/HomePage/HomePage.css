@@ -446,6 +446,51 @@ html, body {
     color: #0c2a5b; 
   }
 
+  .admin-reservation-list {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 12px;
+  color: #ddd;
+  margin-top: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.admin-reservation-list h3 {
+  font-size: 16px;
+  color: #79aaff;
+  border-bottom: 1px solid #333;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+
+.reservation-item {
+  background: #2a2a2a;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.reservation-item.approved {
+  border-left: 4px solid #4caf50;
+}
+
+.reservation-item.rejected {
+  border-left: 4px solid #e74c3c;
+}
+
+.reservation-item.pending {
+  border-left: 4px solid #f1c40f;
+}
+
+.no-reservation {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+}
+
+
   
 }
 
