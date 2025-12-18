@@ -291,11 +291,15 @@ export default function HomePage() {
       }
     }
 
+    if (!purpose || purpose.trim() === "") {
+      alert("請填寫理由");
+      return;
+    }
+
     try {
       const date = borrowDate;
       const startTime = `${date}T${startHour}:00+08:00`;
       const endTime = `${date}T${endHour}:00+08:00`;
-
 
       console.log("送出的 JSON：", {
         classroom_id: selectedClassroom.id,
