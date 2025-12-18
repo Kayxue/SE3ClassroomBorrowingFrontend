@@ -12,7 +12,9 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  
   //假資料
   const borrowRecords = [
     { id: 1, room: "101 教室", time: "2025-10-01 10:00 - 12:00" },
@@ -43,7 +45,13 @@ export default function ProfilePage() {
           navigate("/");
           return;
         }
-        if (res.ok) {
+        if (res.ok && data) {
+          setIsLoggedIn(true);
+          if (data.role === "Admin") {
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
+          }
           setEmail(data?.email ?? "");
           setName(data?.name ?? "");
           setPhone(data?.phone_number ?? "");
@@ -226,9 +234,11 @@ export default function ProfilePage() {
         </div>
 
         <div style={{ marginTop: 12 }}>
-          <button className="btn records-btn" onClick={() => setShowRecordsModal(true)}>
-            借用紀錄
-          </button>
+          {!isAdmin && (
+            <button className="btn records-btn" onClick={() => setShowRecordsModal(true)}>
+              借用紀錄
+            </button>
+          )}
         </div>
 
         <div style={{ marginTop: 5 }}>
