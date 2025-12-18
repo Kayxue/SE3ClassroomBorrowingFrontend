@@ -111,6 +111,10 @@ html, body {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   color: #0c2a5b;
   font-family: "Noto Sans TC", sans-serif;
+  
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* 關閉按鈕 */
@@ -445,8 +449,6 @@ html, body {
   .modal-close {
     color: #0c2a5b; 
   }
-
-  
 }
 
 @media (max-width: 900px) {
@@ -462,5 +464,92 @@ html, body {
 
   .homepage-header {
     left: 40px;
+  }
+}
+
+/*週課表*/
+.schedule-modal {
+  max-width: 900px;
+  padding: 12px;
+}
+
+.checktable-button{
+  background-color: #0c2a5b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+.schedule-table-wrapper {
+  width: 100%;
+  overflow-y: visible;
+  max-height: none;
+  border: 1px solid rgba(12,42,91,0.06);
+  padding: 4px; 
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.schedule-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  font-size: 11px; 
+  min-width: 380px;
+}
+
+/* 日期 */
+.schedule-header-cell {
+  padding: 4px 4px; 
+  font-size: 12px;
+}
+
+/* 時段行 */
+.schedule-time-header {
+  padding: 6px 4px;
+  font-size: 14px;
+  width: 60px; 
+}
+
+.schedule-time-cell {
+  padding: 6px 4px;
+  height: 30px;
+  font-size: 11px;
+  width: 70px;
+}
+
+/* 格子（每小時） */
+.schedule-cell {
+  padding: 6px 4px;
+  height: 30px; 
+  font-size: 11px;
+}
+
+.schedule-cell .cell-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+@media (max-width: 600px) {
+  .schedule-table-wrapper {
+    max-height: 300px;
+  }
+  .schedule-cell {
+    height: 24px;
+    padding: 4px 3px;
+  }
+  .schedule-header-cell {
+    padding: 4px 3px;
+    font-size: 11px;
+  }
+  .schedule-time-header, .schedule-time-cell {
+    width: 60px;
+    font-size: 11px;
   }
 }
