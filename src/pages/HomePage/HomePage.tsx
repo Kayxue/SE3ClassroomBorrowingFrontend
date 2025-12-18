@@ -36,7 +36,9 @@ export default function HomePage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState<any>(null);
 
-  const [borrowDate, setBorrowDate] = useState("");
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  const [borrowDate, setBorrowDate] = useState(todayStr);
   const [startHour, setStartHour] = useState("00:00");
   const [endHour, setEndHour] = useState("00:00");
   const [purpose, setPurpose] = useState("");
@@ -191,6 +193,16 @@ export default function HomePage() {
 
     const handleReservationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!borrowDate || borrowDate < todayStr) {
+      alert("借用日期不可早於今天，請選擇有效日期。");
+      return;
+    }
+
+    if (endHour < startHour) {
+      alert("結束時間不可早於開始時間，請調整時段。");
+      return;
+    }
 
     try {
       const date = borrowDate;
@@ -486,15 +498,29 @@ export default function HomePage() {
                   <button onClick={() => navigate("/")}>登入以申請教室</button>
                 </div>
               ) : !isAdmin ? (
-                // --- 一般使用者登入模式 ---
+                // --- 一般使用者登入模式 申請表單 ---
                 <form className="apply-form" onSubmit={handleReservationSubmit}>
                   <label>借用日期：</label>
-                  <input type="date" value={borrowDate} onChange={(e) => setBorrowDate(e.target.value)} />
+                  <input
+                    type="date"
+                    value={borrowDate}
+                    min={todayStr}
+                    onChange={(e) => setBorrowDate(e.target.value)}
+                  />
 
                   <div className="time-row">
                     <div className="time-field">
                       <label>開始時間：</label>
-                      <select value={startHour} onChange={(e) => setStartHour(e.target.value)}>
+                      <select
+                        value={startHour}
+                        onChange={(e) => {
+                          const newStart = e.target.value;
+                          setStartHour(newStart);
+                          if (endHour < newStart) {
+                            setEndHour(newStart);
+                          }
+                        }}
+                      >
                         {Array.from({ length: 24 }).map((_, i) => {
                           const hour = i.toString().padStart(2, "0");
                           return (
@@ -508,11 +534,24 @@ export default function HomePage() {
 
                     <div className="time-field">
                       <label>結束時間：</label>
-                      <select value={endHour} onChange={(e) => setEndHour(e.target.value)}>
+                      <select
+                        value={endHour}
+                        onChange={(e) => {
+                          const newEnd = e.target.value;
+                          if (newEnd < startHour) {
+                            alert("結束時間不可早於開始時間");
+                            setEndHour(startHour);
+                          } else {
+                            setEndHour(newEnd);
+                          }
+                        }}
+                      >
                         {Array.from({ length: 24 }).map((_, i) => {
                           const hour = i.toString().padStart(2, "0");
+                          const value = `${hour}:00`;
+                          const disabled = value < startHour; 
                           return (
-                            <option key={i} value={`${hour}:00`}>
+                            <option key={i} value={value} disabled={disabled}>
                               {hour}:00
                             </option>
                           );
