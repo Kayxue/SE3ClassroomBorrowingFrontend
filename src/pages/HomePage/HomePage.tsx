@@ -122,7 +122,7 @@ export default function HomePage() {
             type: item.description || "未分類",
             location: item.location || "未知地點",
             capacity: item.capacity || 0,
-            imageUrl: unknownPic,
+            imageUrl: item.photo_id ? `/api/image/${item.photo_id}` : unknownPic,
             __raw: item,
           }));
           setAllClassrooms(mapped);
@@ -171,7 +171,7 @@ export default function HomePage() {
 
       if (success) {
         alert("新增成功！");
-        const created = { id: data.id, ...newClassroom, imageUrl: unknownPic, __raw: data, type: newClassroom.type };
+        const created = { id: data.id, ...newClassroom, imageUrl: `/api/image/${data.photo_id}`, __raw: data, type: newClassroom.type };
         setClassrooms((prev) => [...prev, created]);
         setAllClassrooms((prev) => [...prev, created]);
         setShowAddModal(false);
