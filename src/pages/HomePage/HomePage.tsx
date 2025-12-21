@@ -357,17 +357,14 @@ export default function HomePage() {
   ];
 
   // 搜尋處理
-  const handleSearch = (filters: any) => {
-    const { time, type, capacity, onlyAvailable } = filters;
-    console.log("查詢條件：", filters);
-
+  const handleSearch = async (filters: any) => {
+    const { date, startHour, endHour, type, capacity, onlyAvailable } = filters;
     let result = allClassrooms.slice();
 
     // 類別過濾
     if (type) {
       result = result.filter((c) => (c.type || "").toString() === type);
     }
-
     // 容納人數過濾
     if (capacity) {
       if (capacity === "60以上") {
@@ -380,14 +377,37 @@ export default function HomePage() {
       }
     }
 
-    // "時段"與"是否可借用"待更新
-    if (time || onlyAvailable) {
-      if (onlyAvailable) {
-        alert('「只顯示可借用教室」待更新。');
-      }
-      if (time) {
-        console.log('時段條件待更新:', time);
-      }
+    // 只顯示可借用教室
+    if (onlyAvailable && date && startHour && endHour) {
+      // 取得所有預約
+      let reservationsData: any[] = [];
+      try {
+        const { success, data } = await getAllReservations();
+        if (success && Array.isArray(data)) {
+          reservationsData = data.filter((r: any) => r.status === "Approved");
+        }
+      } catch {}
+      const sHourNum = Number(startHour.split(":")[0]);
+      const eHourNum = Number(endHour.split(":")[0]);
+      result = result.filter((c) => {
+        // 找該教室在該日期的所有已核准預約
+        const classroomId = String(c.id);
+        const occupied = reservationsData.some((r) => {
+          const rClassId = String(r.classroom_id ?? r.classroomId ?? r.classroom?.id ?? r.classroom);
+          if (rClassId !== classroomId) return false;
+          const startDate = new Date(r.start_time);
+          const endDate = new Date(r.end_time);
+          const yyyy = startDate.getFullYear();
+          const mm = String(startDate.getMonth() + 1).padStart(2, "0");
+          const ddStr = String(startDate.getDate()).padStart(2, "0");
+          const dateStr = `${yyyy}-${mm}-${ddStr}`;
+          if (dateStr !== date) return false;
+          const rStart = startDate.getHours();
+          const rEnd = endDate.getHours();
+          return sHourNum < rEnd && rStart < eHourNum;
+        });
+        return !occupied;
+      });
     }
 
     setClassrooms(result);

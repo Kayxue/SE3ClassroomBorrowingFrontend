@@ -1,13 +1,13 @@
 .search-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  width: 1000px;
-  gap: 35px;
-  padding: 18px;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  width: 1050px;
+  gap: 1px;
+  padding: 20px;
   margin-top: 90px;
-  margin-left: 15px;
+  margin-left: 10px;
   background-color: #ffffff;
   border: 2px solid #0c2a5b;
   border-radius: 10px;
@@ -19,24 +19,26 @@
 .form-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
+  margin-bottom: 0;
+  margin-left: 10px;
 }
 
 .form-group label {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 12px;
 }
 
 .form-group select {
-  padding: 6px 12px;
+  padding: 3px 8px;
   border-radius: 6px;
   border: 1px solid #a2a0a0;
-  font-size: 15px;
+  font-size: 13px;
   color: #0c2a5b;
 }
 
 .checkbox {
-  margin-left: 12px;
+  margin-left: 30px;
 }
 
 .search-btn {
@@ -45,9 +47,10 @@
   font-size: 16px;
   border: none;
   border-radius: 8px;
-  padding: 8px 18px;
+  padding: 10px 20px;
   cursor: pointer;
   transition: 0.25s;
+  margin-left: 35px;
 }
 
 .search-btn:hover {
@@ -72,5 +75,23 @@
   .search-btn {
     background-color: #8aa4ff;
     color: #000;
+  }
+}
+
+@media (max-width: 120px) {
+  .search-bar {
+    width: 98vw;
+    min-width: 600px;
+    gap: 10px;
+    padding: 10px;
+    margin-left: 0;
+  }
+  .form-group label {
+    font-size: 13px;
+  }
+  .form-group select,
+  .form-group input {
+    font-size: 13px;
+    padding: 4px 8px;
   }
 }
