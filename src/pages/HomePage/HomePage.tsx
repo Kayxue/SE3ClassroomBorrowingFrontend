@@ -3,6 +3,7 @@ import logo from "../../assets/logo2.svg";
 import ClassroomCard from "../../components/Classroomcard";
 import SearchBar from "../../components/SearchBar";
 import unknownPic from "../../assets/unknowpic.jpg";
+import AdminReservationList from "../../components/AdminReservationList";
 import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./HomePage.css";
@@ -10,6 +11,8 @@ import { getClassroomList, createClassroom, updateClassroomPhoto,updateClassroom
 import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
 import { getProfile } from "../../api/profile";
 import { createReservation, getAllReservations } from "../../api/reservation"; 
+import { createReservation,getAdminReservations } from "../../api/reservation";
+
 
 
 export default function HomePage() {
@@ -25,6 +28,7 @@ export default function HomePage() {
     location: "",
     photo: null as File | null, 
   });
+  const [reservations, setReservations] = useState<any[]>([]);
 
   const navigate = useNavigate();
   const [selectedClassroom, setSelectedClassroom] = useState<any>(null);
@@ -118,6 +122,8 @@ export default function HomePage() {
           setIsLoggedIn(true);
           if (data.role === "Admin") {
             setIsAdmin(true);
+            const r = await getAdminReservations("All");
+            if (r.success) setReservations(r.data.items || []);
           }
         } 
       } catch (err) {
@@ -135,7 +141,7 @@ export default function HomePage() {
             type: item.description || "未分類",
             location: item.location || "未知地點",
             capacity: item.capacity || 0,
-            imageUrl: unknownPic,
+            imageUrl: item.photo_id ? `/api/image/${item.photo_id}` : unknownPic,
             __raw: item,
           }));
           setAllClassrooms(mapped);
@@ -184,7 +190,7 @@ export default function HomePage() {
 
       if (success) {
         alert("新增成功！");
-        const created = { id: data.id, ...newClassroom, imageUrl: unknownPic, __raw: data, type: newClassroom.type };
+        const created = { id: data.id, ...newClassroom, imageUrl: `/api/image/${data.photo_id}`, __raw: data, type: newClassroom.type };
         setClassrooms((prev) => [...prev, created]);
         setAllClassrooms((prev) => [...prev, created]);
         setShowAddModal(false);
@@ -573,6 +579,7 @@ export default function HomePage() {
         <div className="modal-overlay" onClick={() => setSelectedClassroom(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelectedClassroom(null)}>×</button>
+
             <div className="modal-top">
               <img
                 src={selectedClassroom.imageUrl}
@@ -586,9 +593,9 @@ export default function HomePage() {
                 <p>容納人數：{selectedClassroom.capacity} 人</p>
               </div>
             </div>
+
             <div className="modal-bottom">
               {!isLoggedIn ? (
-                // --- 訪客模式 ---
                 <div className="guest-login">
                   <button onClick={() => navigate("/")}>登入以申請教室</button>
                 </div>
@@ -640,7 +647,6 @@ export default function HomePage() {
                         ))}
                       </select>
                     </div>
-
                     <div className="time-field">
                       <label>結束時間：</label>
                       <select
@@ -680,17 +686,16 @@ export default function HomePage() {
                     <button type="submit">提出申請</button>
                   </div>
                 </form>
-
               ) : (
-                // --- 管理員模式 ---
-                <p className="admin-msg">管理員無需申請教室。</p>
+                // --- 管理員模式：申請清單 + 篩選 ---
+                <AdminReservationList classroomId={selectedClassroom.id} />
               )}
             </div>
-
-
           </div>
         </div>
       )}
+
+
 
       {showEditModal && editData && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>

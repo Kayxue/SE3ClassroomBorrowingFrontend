@@ -5,15 +5,17 @@ import {
   getReservationsByStatus,
   reviewReservation,
   updateReservation,
+  getAdminReservations,
+  deleteReservation
 } from "../../api/reservation";
 import { getClassroomById } from "../../api/classroom";
 import { getProfile } from "../../api/profile";
+import { FaTrash } from "react-icons/fa";
 
 function formatTimeRange(start: string, end: string) {
   try {
     const s = new Date(start);
     const e = new Date(end);
-    // 顯示時自動加回台灣時區 (+8 小時)
     s.setHours(s.getHours() + 8);
     e.setHours(e.getHours() + 8);
     const date = s.toISOString().slice(0, 10);
@@ -46,7 +48,7 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
   const [filterStatus, setFilterStatus] = useState("All");
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // 表單欄位
+
   const [editDate, setEditDate] = useState("");
   const [editStart, setEditStart] = useState("");
   const [editEnd, setEditEnd] = useState("");
@@ -77,17 +79,23 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
       if (isAdmin) {
         result =
           statusFilter !== "All"
+            ? await getAdminReservations(statusFilter)
+            : await getAdminReservations();
+      } else {
+        result =
+          statusFilter !== "All"
             ? await getReservationsByStatus(statusFilter)
             : await getAllReservations();
-      } else {
-        result = await getAllReservations();
       }
 
       const { success, data } = result;
-      if (success && Array.isArray(data)) {
+      if (success && data) {
+        // 後端有時回傳 items[], 有時直接是 []
+        const records = Array.isArray(data.items) ? data.items : data;
+
         const myId = localStorage.getItem("user_id");
         const filtered =
-          role === "Admin" ? data : data.filter((n: any) => n.user_id === myId);
+          role === "Admin" ? records : records.filter((n: any) => n.user_id === myId);
 
         filtered.sort(
           (a: any, b: any) =>
@@ -106,6 +114,7 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
             return { ...n, classroom_name: classroomName };
           })
         );
+
         setNotifications(enriched);
       } else {
         alert("無法載入申請資料");
@@ -115,6 +124,7 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
     }
     setLoading(false);
   };
+
 
   useEffect(() => {
     fetchData();
@@ -140,7 +150,6 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
   const openEditModal = () => {
     if (!selected) return;
 
-    // 將 UTC 轉為台灣時間顯示
     const s = new Date(selected.start_time);
     const e = new Date(selected.end_time);
     s.setHours(s.getHours() + 8);
@@ -169,7 +178,6 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
       return;
     }
 
-    // 明確加上台灣時區
     const start_time = `${editDate}T${editStart}:00+08:00`;
     const end_time = `${editDate}T${editEnd}:00+08:00`;
 
@@ -278,7 +286,28 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
       {showEditModal && (
         <div className="edit-modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
-            <h4>修改申請</h4>
+            <div className="edit-modal-header">
+              <h4 className="edit-modal-title">修改申請</h4>
+              <FaTrash
+                className="delete-icon"
+                title="刪除此申請"
+                onClick={async () => {
+                  if (!selected) return;
+                  const confirmDelete = window.confirm("確定要刪除此申請嗎？");
+                  if (confirmDelete) {
+                    const { success } = await deleteReservation(selected.id);
+                    if (success) {
+                      alert("已刪除申請");
+                      setShowEditModal(false);
+                      setSelected(null);
+                      fetchData(filterStatus);
+                    } else {
+                      alert("刪除失敗，請稍後再試");
+                    }
+                  }
+                }}
+              />
+            </div>
 
             <label>借用日期：</label>
             <input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} />
@@ -322,6 +351,7 @@ export default function UserNotificationPage({ onClose }: { onClose: () => void 
           </div>
         </div>
       )}
+
 
     </div>
   );
