@@ -207,6 +207,12 @@ html, body {
   color: #0c2a5b;
 }
 
+.borrow-list {
+  flex: 1;                 /* 撐滿剩下空間 */
+  overflow-y: auto;        /* 垂直滾動 */
+  padding-right: 6px;      /* 避免 scrollbar 壓到內容 */
+}
+
 .borrow-name {
   font-size: 15px;
   font-weight: 600;

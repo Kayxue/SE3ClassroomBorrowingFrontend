@@ -5,29 +5,45 @@ import SearchBar from "../../components/SearchBar";
 import unknownPic from "../../assets/unknowpic.jpg";
 import AdminReservationList from "../../components/AdminReservationList";
 import { useNavigate } from "react-router-dom";
-import { FaUserCircle, FaEnvelope, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { borrowKey, returnKey, createKey ,getKeyLogsByReservation , getKeyLogs} from "../../api/key";
+import {
+  FaUserCircle,
+  FaEnvelope,
+  FaEdit,
+  FaTrash,
+  FaPlus,
+} from "react-icons/fa";
 import "./HomePage.css";
-import { getClassroomList, createClassroom, updateClassroomPhoto,updateClassroom,deleteClassroom } from "../../api/classroom";
+import {
+  getClassroomList,
+  createClassroom,
+  updateClassroomPhoto,
+  updateClassroom,
+  deleteClassroom,
+  getClassroomById,
+  getClassroomWithKey,
+} from "../../api/classroom";
 import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
 import { getProfile } from "../../api/profile";
 import { createReservation, getAllReservations, getAdminReservations } from "../../api/reservation";
-
-
 
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false); 
-  const [showNotifications, setShowNotifications] = useState(false); 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     type: "普通教室",
     capacity: "20",
     location: "",
-    photo: null as File | null, 
+    photo: null as File | null,
   });
+
   const [reservations, setReservations] = useState<any[]>([]);
+  const [borrowedList, setBorrowedList] = useState<any[]>([]);
 
   const navigate = useNavigate();
   const [selectedClassroom, setSelectedClassroom] = useState<any>(null);
@@ -58,9 +74,23 @@ export default function HomePage() {
   const [weekDates, setWeekDates] = useState<string[]>([]);
   const [reservationsMap, setReservationsMap] = useState<Record<string, Array<any>>>({});
 
-  // 控制申請表單 Modal（如果有用）
-  const [showReservationModal, setShowReservationModal] = useState(false);
+  type BorrowListItem =
+  | {
+      type: "borrowable";          // 來自 Approved
+      reservationId: string;
+      keyId: string;
+      classroomName: string;
+      deadline: string;
+    }
+  | {
+      type: "borrowed";            // 來自 key logs
+      keyLogId: string;
+      keyId: string;
+      classroomName: string;
+      deadline: string;
+    };
 
+  const [showReservationModal, setShowReservationModal] = useState(false);
   const handleEditClick = (classroom: any) => {
     setEditData({
       id: classroom.id,
@@ -73,58 +103,85 @@ export default function HomePage() {
     setShowEditModal(true);
   };
 
-  const handleUpdateClassroom = async (e: React.FormEvent) => {
-    e.preventDefault();
+  
+  async function getKeyIdByClassroom(classroomId: string) {
     try {
-      const { res } = await updateClassroom(editData.id, {
-        name: editData.name,
-        capacity: Number(editData.capacity),
-        location: editData.location,
-        description: editData.description,
-        room_code: editData.room_code,
-      });
-
-      if (res.ok) {
-        alert("教室更新成功！");
-        setClassrooms((prev) =>
-          prev.map((c) =>
-            c.id === editData.id
-              ? { ...c, ...editData, type: editData.description || c.type }
-              : c
-          )
+      const { success, data } = await getClassroomWithKey(classroomId);
+      if (success && data.keys && data.keys.length > 0) {
+        console.log(
+          "找到 key：",
+          data.keys[0].id,
+          data.keys[0].key_number
         );
-        setAllClassrooms((prev) =>
-          prev.map((c) =>
-            c.id === editData.id
-              ? { ...c, ...editData, type: editData.description || c.type }
-              : c
-          )
-        );
-        setShowEditModal(false);
+        return data.keys[0].id;
       } else {
-        const errText = await res.text();
-        alert(`更新失敗 (${res.status})：${errText}`);
+        console.warn(`教室 ${classroomId} 沒有綁定任何 key`);
+        return null;
       }
-    } catch (err: any) {
-      console.error("更新教室失敗:", err);
-      alert("發生錯誤：" + err.message);
+    } catch (err) {
+      console.error("查詢鑰匙失敗：", err);
+      return null;
     }
-  };
-
-
+  }
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const { res, data } = await getProfile();
-        console.log(res.status)
+        console.log(res.status);
+
         if (res.ok && data) {
           setIsLoggedIn(true);
+
           if (data.role === "Admin") {
             setIsAdmin(true);
-            const r = await getAdminReservations("All");
-            if (r.success) setReservations(r.data.items || []);
+            await fetchBorrowedList();
+
+            const { success, data } = await getAdminReservations("Approved");
+
+            if (success) {
+              const borrowable: BorrowListItem[] = await Promise.all(
+                data.items
+                  .filter((r: any) => r.status === "Approved")
+                  .map(async (r: any) => {
+                    const keyInfo = await getClassroomWithKey(r.classroom_id);
+
+                    return {
+                      id: r.id, 
+                      classroomName: keyInfo.success
+                        ? keyInfo.data.name
+                        : "未知教室",
+                      keyId: keyInfo.success
+                        ? keyInfo.data.keys?.[0]?.id || null
+                        : null,
+                      borrowed: false,
+                      deadline: r.end_time,
+                    };
+                  })
+              );
+
+              setBorrowedList((prev) => {
+                const existingReservationIds = new Set(
+                  prev
+                    .filter(
+                      (p): p is Extract<BorrowListItem, { type: "borrowable" }> =>
+                        p.type === "borrowable"
+                    )
+                    .map((p) => p.reservationId)
+                );
+
+                const newItems = borrowable.filter(
+                  (b) =>
+                    b.type === "borrowable" &&
+                    !existingReservationIds.has(b.reservationId)
+                );
+
+                return [...prev, ...newItems];
+              });
+            }
+
           }
-        } 
+
+        }
       } catch (err) {
         console.error("抓取使用者資料錯誤：", err);
       }
@@ -134,19 +191,29 @@ export default function HomePage() {
       try {
         const { res, data } = await getClassroomList();
         if (res.ok && Array.isArray(data)) {
-          const mapped = data.map((item: any) => ({
-            id: item.id,
-            name: item.name || `教室 ${item.id}`,
-            type: item.description || "未分類",
-            location: item.location || "未知地點",
-            capacity: item.capacity || 0,
-            imageUrl: item.photo_id ? `/api/image/${item.photo_id}` : unknownPic,
-            __raw: item,
-          }));
-          setAllClassrooms(mapped);
-          setClassrooms(mapped);
-        } else {
-          console.warn("無法取得教室資料：", data);
+          const classroomsWithKeys = await Promise.all(
+            data.map(async (item: any) => {
+              const keyInfo = await getClassroomWithKey(item.id);
+              const key = keyInfo.success
+                ? keyInfo.data.keys?.[0]
+                : null;
+
+              return {
+                id: item.id,
+                name: item.name || `教室 ${item.id}`,
+                type: item.description || "未分類",
+                location: item.location || "未知地點",
+                capacity: item.capacity || 0,
+                keyId: key?.id || null,
+                keyNumber: key?.key_number || "未建立鑰匙",
+                imageUrl: item.photo_id ? `/api/image/${item.photo_id}` : unknownPic,
+                __raw: item,
+              };
+            })
+          );
+
+          setClassrooms(classroomsWithKeys);
+          setAllClassrooms(classroomsWithKeys);
         }
       } catch (err) {
         console.error("抓取教室資料錯誤：", err);
@@ -156,7 +223,6 @@ export default function HomePage() {
     fetchUserProfile();
     fetchClassrooms();
   }, []);
-
   const handleDelete = async (id: number) => {
     try {
       const { res } = await deleteClassroom(String(id));
@@ -183,13 +249,26 @@ export default function HomePage() {
       fd.append("capacity", String(newClassroom.capacity));
       fd.append("location", newClassroom.location);
       fd.append("description", `${newClassroom.type}`);
-      fd.append("photo", newClassroom.photo)
+      fd.append("photo", newClassroom.photo);
 
-      const { success,status,data } = await createClassroom(fd);
+      const { success, status, data } = await createClassroom(fd);
 
       if (success) {
         alert("新增成功！");
         const created = { id: data.id, ...newClassroom, imageUrl: `/api/image/${data.photo_id}`, __raw: data, type: newClassroom.type };
+
+        const keyNumber = `${newClassroom.name || "教室"}-Key`;
+        const keyResult = await createKey(data.id, keyNumber);
+
+        if (keyResult.success) {
+          console.log("已自動建立鑰匙：", keyResult.data.key_number);
+        } else {
+          console.warn("建立鑰匙失敗：", keyResult);
+          alert(
+            `警告：教室已建立，但鑰匙建立失敗 (${keyResult.status})`
+          );
+        }
+
         setClassrooms((prev) => [...prev, created]);
         setAllClassrooms((prev) => [...prev, created]);
         setShowAddModal(false);
@@ -203,9 +282,9 @@ export default function HomePage() {
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0] || null;
-      setFormData((prev) => ({ ...prev, photo: file }));
-    };
+    const file = e.target.files?.[0] || null;
+    setFormData((prev) => ({ ...prev, photo: file }));
+  };
 
 
 
@@ -284,6 +363,89 @@ export default function HomePage() {
     }
     return false;
   };
+  async function handleBorrow(item: BorrowListItem) {
+    if (item.type !== "borrowable") return;
+
+    await borrowKey(
+      item.keyId,
+      new Date().toISOString(),
+      item.deadline,
+      item.reservationId
+    );
+
+    await fetchBorrowedList();
+  }
+
+
+  async function handleReturn(item: BorrowListItem) {
+    if (item.type !== "borrowed") return;
+
+    await returnKey(
+      item.keyLogId,
+      new Date().toISOString(),
+      true
+    );
+
+    await fetchBorrowedList();
+  }
+
+
+
+  const fetchBorrowedList = async () => {
+  try {
+    const result: BorrowListItem[] = [];
+
+    const { success: logSuccess, data: logs } = await getKeyLogs({ returned: false });
+
+    if (logSuccess && Array.isArray(logs)) {
+      const borrowedItems: BorrowListItem[] = await Promise.all(
+        logs.map(async (log: any) => {
+          let classroomName = "未知教室";
+          if (log.classroom_id) {
+            const { success, data } = await getClassroomById(log.classroom_id);
+            if (success && data?.name) classroomName = data.name;
+          }
+          return {
+            type: "borrowed",
+            keyLogId: log.id,
+            keyId: log.key_id,
+            classroomName,
+            deadline: log.deadline,
+          };
+        })
+      );
+      result.push(...borrowedItems);
+    }
+
+    const adminRes = await getAdminReservations("Approved");
+
+    if (adminRes.success && Array.isArray(adminRes.data.items)) {
+      const borrowableItems: BorrowListItem[] = await Promise.all(
+        adminRes.data.items.map(async (r: any) => {
+          let classroomName = "未知教室";
+          if (r.classroom_id) {
+            const { success, data } = await getClassroomById(r.classroom_id);
+            if (success && data?.name) classroomName = data.name;
+          }
+
+          return {
+            type: "borrowable",
+            reservationId: r.id,
+            keyId: r.key_id ?? "",
+            classroomName,
+            deadline: r.end_time,
+          };
+        })
+      );
+      result.push(...borrowableItems);
+    }
+
+    setBorrowedList(result);
+  } catch (err) {
+    console.error("fetchBorrowedList 失敗", err);
+    setBorrowedList([]);
+  }
+};
 
   const handleReservationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -349,12 +511,6 @@ export default function HomePage() {
       alert("發生錯誤：" + err.message);
     }
   };
-
-  const borrowedList = [
-    { id: 1, name: "101 教室", category: "普通教室" },
-    { id: 2, name: "204 教室", category: "電腦教室" },
-    { id: 3, name: "305 教室", category: "演講廳" },
-  ];
 
   // 搜尋處理
   const handleSearch = async (filters: any) => {
@@ -451,7 +607,7 @@ export default function HomePage() {
             <FaEnvelope
               className="icon-button"
               title="通知"
-              onClick={() => setShowNotifications(true)} 
+              onClick={() => setShowNotifications(true)}
             />
             <FaUserCircle
               className="icon-button"
@@ -466,7 +622,7 @@ export default function HomePage() {
         )}
       </header>
 
-      {/* 通知彈窗*/}
+      {/* 通知彈窗 */}
       {showNotifications && (
         <UserNotificationPage onClose={() => setShowNotifications(false)} />
       )}
@@ -474,14 +630,38 @@ export default function HomePage() {
       {isLoggedIn && !isAdmin ? (
         <aside className="sidebar">
           <h2 className="sidebar-title">待還教室列表</h2>
+
           <div className="borrow-list">
-            {borrowedList.map((item, index) => (
-              <div key={index} className="borrow-item">
-                <span className="borrow-name">{item.name}</span>
-                <button className="return-btn">歸還</button>
+            {borrowedList.map(item => (
+              <div
+                key={item.type === "borrowed" ? item.keyLogId : item.reservationId}
+                className="borrow-item"
+              >
+                <span className="borrow-name">
+                  {item.classroomName || "未知教室"}
+                </span>
+
+                {item.type === "borrowable" && (
+                  <button
+                    className="borrow-btn"
+                    onClick={() => handleBorrow(item)}
+                  >
+                    借出
+                  </button>
+                )}
+
+                {item.type === "borrowed" && (
+                  <button
+                    className="return-btn"
+                    onClick={() => handleReturn(item)}
+                  >
+                    歸還
+                  </button>
+                )}
               </div>
             ))}
           </div>
+
         </aside>
       ) : null}
 
@@ -500,16 +680,18 @@ export default function HomePage() {
 
           {classrooms.map((c) => (
             <div key={c.id} className="classroom-card">
-              <div onClick={() => {
-                if (editMode) {
-                  handleEditClick(c); 
-                } else {
-                  setSelectedClassroom(c); 
-                }
-              }}
-            >
+              <div
+                onClick={() => {
+                  if (editMode) {
+                    handleEditClick(c);
+                  } else {
+                    setSelectedClassroom(c);
+                  }
+                }}
+              >
                 <ClassroomCard name={c.name} imageUrl={c.imageUrl} />
               </div>
+
               {editMode && (
                 <FaTrash
                   className="delete-icon"
@@ -524,9 +706,20 @@ export default function HomePage() {
 
       {/* 新增教室彈窗 */}
       {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowAddModal(false)}>×</button>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowAddModal(false)}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="modal-close"
+              onClick={() => setShowAddModal(false)}
+            >
+              ×
+            </button>
             <h2>新增教室</h2>
 
             <form
@@ -534,17 +727,31 @@ export default function HomePage() {
                 e.preventDefault();
                 handleAddClassroom(formData);
               }}
-              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
             >
               <label>
                 教室名稱：
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      name: e.target.value,
+                    })
+                  }
                   placeholder="請輸入教室名稱"
                   required
-                  style={{ width: "90%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                  style={{
+                    width: "90%",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                  }}
                 />
               </label>
 
@@ -553,10 +760,20 @@ export default function HomePage() {
                 <input
                   type="text"
                   value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      location: e.target.value,
+                    })
+                  }
                   placeholder="請輸入教室地點"
                   required
-                  style={{ width: "90%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                  style={{
+                    width: "90%",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                  }}
                 />
               </label>
 
@@ -570,7 +787,12 @@ export default function HomePage() {
                       type: e.target.value,
                     })
                   }
-                  style={{ width: "95%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                  style={{
+                    width: "95%",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                  }}
                 >
                   <option value="普通教室">普通教室</option>
                   <option value="電腦教室">電腦教室</option>
@@ -579,13 +801,22 @@ export default function HomePage() {
                 </select>
               </label>
 
-
               <label>
                 容納人數：
                 <select
                   value={formData.capacity}
-                  onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                  style={{ width: "95%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      capacity: e.target.value,
+                    })
+                  }
+                  style={{
+                    width: "95%",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    border: "1px solid #ccc",
+                  }}
                 >
                   <option value="20">20 人</option>
                   <option value="30">30 人</option>
@@ -602,12 +833,14 @@ export default function HomePage() {
                   name="photo"
                   accept="image/*"
                   onChange={(e) =>
-                    setFormData({ ...formData, photo: e.target.files?.[0] || null })
+                    setFormData({
+                      ...formData,
+                      photo: e.target.files?.[0] || null,
+                    })
                   }
                   style={{ width: "90%", padding: "8px" }}
                 />
               </label>
-
 
               <button
                 type="submit"
@@ -630,9 +863,20 @@ export default function HomePage() {
 
       {/* 現有教室彈窗 */}
       {selectedClassroom && (
-        <div className="modal-overlay" onClick={() => setSelectedClassroom(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setSelectedClassroom(null)}>×</button>
+        <div
+          className="modal-overlay"
+          onClick={() => setSelectedClassroom(null)}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="modal-close"
+              onClick={() => setSelectedClassroom(null)}
+            >
+              ×
+            </button>
 
             <div className="modal-top">
               <img
@@ -644,14 +888,18 @@ export default function HomePage() {
                 <h2>{selectedClassroom.name}</h2>
                 <p>地點：{selectedClassroom.location}</p>
                 <p>種類：{selectedClassroom.type}</p>
-                <p>容納人數：{selectedClassroom.capacity} 人</p>
+                <p>
+                  容納人數：{selectedClassroom.capacity} 人
+                </p>
               </div>
             </div>
 
             <div className="modal-bottom">
               {!isLoggedIn ? (
                 <div className="guest-login">
-                  <button onClick={() => navigate("/")}>登入以申請教室</button>
+                  <button onClick={() => navigate("/")}>
+                    登入以申請教室
+                  </button>
                 </div>
               ) : !isAdmin ? (
                 // --- 一般使用者登入模式 申請表單 ---
@@ -701,6 +949,7 @@ export default function HomePage() {
                         ))}
                       </select>
                     </div>
+
                     <div className="time-field">
                       <label>結束時間：</label>
                       <select
@@ -733,7 +982,9 @@ export default function HomePage() {
                     rows={3}
                     placeholder="請輸入教室使用目的"
                     value={purpose}
-                    onChange={(e) => setPurpose(e.target.value)}
+                    onChange={(e) =>
+                      setPurpose(e.target.value)
+                    }
                   />
 
                   <div className="submit-row">
@@ -741,39 +992,61 @@ export default function HomePage() {
                   </div>
                 </form>
               ) : (
-                // --- 管理員模式：申請清單 + 篩選 ---
-                <AdminReservationList classroomId={selectedClassroom.id} />
+                <AdminReservationList
+                  classroomId={selectedClassroom.id}
+                  keyId={selectedClassroom.keyId}
+                />
+
               )}
             </div>
           </div>
         </div>
       )}
 
-
-
       {showEditModal && editData && (
-        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowEditModal(false)}>×</button>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowEditModal(false)}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="modal-close"
+              onClick={() => setShowEditModal(false)}
+            >
+              ×
+            </button>
             <h2>編輯教室</h2>
 
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
                 try {
-                  const { res } = await updateClassroom(editData.id, {
-                    name: editData.name,
-                    capacity: Number(editData.capacity),
-                    location: editData.location,
-                    description: editData.description,
-                    room_code: editData.room_code,
-                  });
+                  const { res } = await updateClassroom(
+                    editData.id,
+                    {
+                      name: editData.name,
+                      capacity: Number(editData.capacity),
+                      location: editData.location,
+                      description: editData.description,
+                      room_code: editData.room_code,
+                    }
+                  );
 
                   if (res.ok) {
                     if (editData.photo) {
-                      const { success } = await updateClassroomPhoto(editData.id, editData.photo);
+                      const { success } =
+                        await updateClassroomPhoto(
+                          editData.id,
+                          editData.photo
+                        );
                       if (success) {
-                        const updatedUrl = URL.createObjectURL(editData.photo);
+                        const updatedUrl =
+                          URL.createObjectURL(
+                            editData.photo
+                          );
                         setClassrooms((prev) =>
                           prev.map((c) =>
                             c.id === editData.id ? { ...c, imageUrl: updatedUrl, type: editData.description || c.type } : c
@@ -786,6 +1059,7 @@ export default function HomePage() {
                         );
                       }
                     }
+
                     alert("教室資料已更新！");
                     setShowEditModal(false);
 
@@ -803,18 +1077,30 @@ export default function HomePage() {
                     alert(`更新失敗 (${res.status})`);
                   }
                 } catch (err: any) {
-                  console.error("更新教室失敗:", err);
+                  console.error(
+                    "更新教室失敗:",
+                    err
+                  );
                   alert("發生錯誤：" + err.message);
                 }
               }}
-              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
             >
               <label>
                 教室名稱：
                 <input
                   type="text"
                   value={editData.name}
-                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditData({
+                      ...editData,
+                      name: e.target.value,
+                    })
+                  }
                   placeholder="請輸入教室名稱"
                   required
                 />
@@ -825,7 +1111,12 @@ export default function HomePage() {
                 <input
                   type="text"
                   value={editData.location}
-                  onChange={(e) => setEditData({ ...editData, location: e.target.value })}
+                  onChange={(e) =>
+                    setEditData({
+                      ...editData,
+                      location: e.target.value,
+                    })
+                  }
                   placeholder="請輸入教室地點"
                 />
               </label>
@@ -852,7 +1143,12 @@ export default function HomePage() {
                 容納人數：
                 <select
                   value={editData.capacity}
-                  onChange={(e) => setEditData({ ...editData, capacity: e.target.value })}
+                  onChange={(e) =>
+                    setEditData({
+                      ...editData,
+                      capacity: e.target.value,
+                    })
+                  }
                 >
                   <option value="20">20 人</option>
                   <option value="30">30 人</option>
@@ -870,7 +1166,8 @@ export default function HomePage() {
                   onChange={(e) =>
                     setEditData({
                       ...editData,
-                      photo: e.target.files?.[0] || null,
+                      photo:
+                        e.target.files?.[0] || null,
                     })
                   }
                 />

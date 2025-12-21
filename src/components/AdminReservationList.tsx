@@ -2,7 +2,16 @@ import React, { useEffect, useState } from "react";
 import { getAdminReservations, reviewReservation } from "../api/reservation";
 import "./AdminReservationList.css";
 
-export default function AdminReservationList({ classroomId }: { classroomId: number }) {
+type AdminReservationListProps = {
+  classroomId: number;
+  keyId: string | null;
+};
+
+export default function AdminReservationList({
+  classroomId,
+  keyId,
+}: AdminReservationListProps) {
+
   const [filterStatus, setFilterStatus] = useState("All");
   const [reservations, setReservations] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
