@@ -338,16 +338,26 @@ export default function ProfilePage() {
                 {borrowRecords.length === 0 ? (
                   <div className="record-item">目前沒有借用紀錄</div>
                 ) : (
-                  borrowRecords.map((record) => (
-                    <div key={record.id} className="record-item">
-                      <span>
-                        {record.start_time?.replace("T", " ").slice(0, 16) || ""} - {record.end_time?.replace("T", " ").slice(11, 16) || ""}
-                      </span>
-                      <span>
-                        {record.classroom_name}
-                      </span>
-                    </div>
-                  ))
+                  borrowRecords.map((record) => {
+                    const start = new Date(record.start_time);
+                    const end = new Date(record.end_time);
+                    const pad = (n: number) => n.toString().padStart(2, "0");
+                    const localStart = new Date(start.getTime() + (start.getTimezoneOffset() === 0 ? 8 * 60 * 60000 : 0));
+                    const localEnd = new Date(end.getTime() + (end.getTimezoneOffset() === 0 ? 8 * 60 * 60000 : 0));
+                    const dateStr = `${localStart.getFullYear()}-${pad(localStart.getMonth() + 1)}-${pad(localStart.getDate())}`;
+                    const startTime = `${pad(localStart.getHours())}:${pad(localStart.getMinutes())}`;
+                    const endTime = `${pad(localEnd.getHours())}:${pad(localEnd.getMinutes())}`;
+                    return (
+                      <div key={record.id} className="record-item">
+                        <span>
+                          {dateStr} {startTime} - {endTime}
+                        </span>
+                        <span>
+                          {record.classroom_name}
+                        </span>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
