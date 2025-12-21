@@ -5,6 +5,8 @@ import { getProfile } from "../../api/profile";
 import { updatePassword } from "../../api/password";
 import { logout } from "../../api/logout"; 
 import { updateProfile } from "../../api/updateprofile"; 
+import { getAllReservations } from "../../api/reservation"; // 新增
+import { getClassroomById } from "../../api/classroom"; // 新增
 
 export default function ProfilePage() {
   const [email, setEmail] = useState("");
@@ -15,11 +17,7 @@ export default function ProfilePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   
-  //假資料
-  const borrowRecords = [
-    { id: 1, room: "101 教室", time: "2025-10-01 10:00 - 12:00" },
-    { id: 2, room: "204 教室", time: "2025-10-03 13:00 - 15:00" },
-  ];
+  const [borrowRecords, setBorrowRecords] = useState<any[]>([]); // 取代原本假資料
 
   const [showRecordsModal, setShowRecordsModal] = useState(false);
 
@@ -66,6 +64,38 @@ export default function ProfilePage() {
       }
     };
     fetchProfile();
+
+    const fetchBorrowRecords = async () => {
+      try {
+        const { success, data } = await getAllReservations();
+        if (success && Array.isArray(data)) {
+          // 過濾已核准
+          const approved = data.filter((r: any) => r.status === "Approved");
+          // 取得教室名稱
+          const recordsWithName = await Promise.all(
+            approved.map(async (record: any) => {
+              let classroomName = record.classroom_name || record.classroom?.name || "";
+              if (!classroomName && record.classroom_id) {
+                try {
+                  const res = await getClassroomById(record.classroom_id);
+                  if (res.success && res.data?.name) classroomName = res.data.name;
+                } catch {}
+              }
+              return { ...record, classroom_name: classroomName || "未知教室" };
+            })
+          );
+          //排序
+          recordsWithName.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+          setBorrowRecords(recordsWithName);
+        } else {
+          setBorrowRecords([]);
+        }
+      } catch {
+        setBorrowRecords([]);
+      }
+    };
+    fetchBorrowRecords();
+
     return () => {
       mounted = false;
     };
@@ -304,13 +334,21 @@ export default function ProfilePage() {
                 ×
               </button>
               <h3>借用紀錄</h3>
-                  <div className="records-list">
-                {borrowRecords.map((record) => (
-                  <div key={record.id} className="record-item">
-                    <span>{record.time}</span>
-                    <span>{record.room}</span>
-                  </div>
-                ))}
+              <div className="records-list">
+                {borrowRecords.length === 0 ? (
+                  <div className="record-item">目前沒有借用紀錄</div>
+                ) : (
+                  borrowRecords.map((record) => (
+                    <div key={record.id} className="record-item">
+                      <span>
+                        {record.start_time?.replace("T", " ").slice(0, 16) || ""} - {record.end_time?.replace("T", " ").slice(11, 16) || ""}
+                      </span>
+                      <span>
+                        {record.classroom_name}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
