@@ -80,13 +80,45 @@ export async function updateClassroom(id: string, body: any) {
 
 export async function getClassroomById(id: string) {
   const res = await fetch(`${API_BASE}/classroom/${id}`, {
-    method: "GET",
     credentials: "include",
   });
 
-  if (res.ok) {
-    return { success: true, data: await res.json() };
-  } else {
-    return { success: false, status: res.status, data: await res.text() };
+  let data: any;
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
   }
+
+  return {
+    success: res.ok,
+    status: res.status,
+    data,
+  };
 }
+
+
+export async function getClassroomWithKey(id: string) {
+  const res = await fetch(`${API_BASE}/classroom/${id}?with_keys=true`, {
+    credentials: "include",
+  });
+
+  let rawText = "";
+  try {
+    rawText = await res.text();
+  } catch {}
+
+  let data: any;
+  try {
+    data = JSON.parse(rawText);
+  } catch {
+    data = rawText;
+  }
+
+  return {
+    success: res.ok,
+    status: res.status,
+    data,
+  };
+}
+
