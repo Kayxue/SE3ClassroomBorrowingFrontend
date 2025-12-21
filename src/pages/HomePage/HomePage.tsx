@@ -10,8 +10,7 @@ import "./HomePage.css";
 import { getClassroomList, createClassroom, updateClassroomPhoto,updateClassroom,deleteClassroom } from "../../api/classroom";
 import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
 import { getProfile } from "../../api/profile";
-import { createReservation, getAllReservations } from "../../api/reservation"; 
-import { createReservation,getAdminReservations } from "../../api/reservation";
+import { createReservation, getAllReservations, getAdminReservations } from "../../api/reservation";
 
 
 
