@@ -10,6 +10,7 @@ import "./HomePage.css";
 import { getClassroomList, createClassroom, updateClassroomPhoto,updateClassroom,deleteClassroom } from "../../api/classroom";
 import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
 import { getProfile } from "../../api/profile";
+import { createReservation, getAllReservations } from "../../api/reservation"; 
 import { createReservation,getAdminReservations } from "../../api/reservation";
 
 
@@ -39,14 +40,27 @@ export default function HomePage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editData, setEditData] = useState<any>(null);
 
-  const [borrowDate, setBorrowDate] = useState("");
-  const [startHour, setStartHour] = useState("00:00");
-  const [endHour, setEndHour] = useState("00:00");
+  const todayStr = new Date().toISOString().split("T")[0];
+
   const [purpose, setPurpose] = useState("");
+  const [borrowDate, setBorrowDate] = useState(todayStr);
+
+  const [startHour, setStartHour] = useState("07:00");
+  const [endHour, setEndHour] = useState("08:00");
+  const allowedStartHours = Array.from({ length: 15 }).map((_, i) =>
+    (7 + i).toString().padStart(2, "0")
+  );
+  const allowedEndHours = Array.from({ length: 15 }).map((_, i) =>
+    (8 + i).toString().padStart(2, "0")
+  );
+
+  // 週課表
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [weekDates, setWeekDates] = useState<string[]>([]);
+  const [reservationsMap, setReservationsMap] = useState<Record<string, Array<any>>>({});
 
   // 控制申請表單 Modal（如果有用）
   const [showReservationModal, setShowReservationModal] = useState(false);
-
 
   const handleEditClick = (classroom: any) => {
     setEditData({
@@ -194,14 +208,104 @@ export default function HomePage() {
       setFormData((prev) => ({ ...prev, photo: file }));
     };
 
-    const handleReservationSubmit = async (e: React.FormEvent) => {
+
+    const getWeekForDate = (dateStr: string) => {
+    const d = new Date(dateStr + "T00:00:00");  
+    const day = d.getDay(); 
+    const diffToMonday = (day === 0) ? -6 : (1 - day);
+    const monday = new Date(d);
+    monday.setDate(d.getDate() + diffToMonday);
+    const dates: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const dd = new Date(monday);
+      dd.setDate(monday.getDate() + i);
+      dates.push(dd.toISOString().split("T")[0]);
+    }
+    return dates;
+  };
+
+  const fetchReservationsForClassroomWeek = async (classroomId: any, refDate: string) => {
+    // 初始化表格
+    const week = getWeekForDate(refDate);
+    const initialMap: Record<string, Array<any>> = {};
+    week.forEach((d) => (initialMap[d] = []));
+    setWeekDates(week);
+    setReservationsMap(initialMap);
+
+    try {
+      const { success, data } = await getAllReservations();
+      if (!success || !Array.isArray(data)) {
+        return;
+      }
+
+      const map: Record<string, Array<any>> = {};
+      week.forEach((d) => (map[d] = []));
+      data.forEach((r: any) => {
+        const rClassId = String(r.classroom_id ?? r.classroomId ?? r.classroom); 
+        if (String(classroomId) !== rClassId) return;
+        const s = String(r.start_time ?? "");
+        const e = String(r.end_time ?? "");
+        if (!s.includes("T") || !e.includes("T")) return;
+        const dateStr = s.split("T")[0];
+        if (!week.includes(dateStr)) return;
+        const startHourNum = Number(s.split("T")[1].slice(0, 2));
+        const endHourNum = Number(e.split("T")[1].slice(0, 2));
+        map[dateStr].push({ start: startHourNum, end: endHourNum, raw: r });
+      });
+      setReservationsMap(map);
+    } catch (err) {
+      alert("抓取預約失敗");
+    }
+  };
+
+  const isOverlap = (dateStr: string, sHour: number, eHour: number, classId: any) => {
+    const slots = reservationsMap[dateStr] || [];
+    for (const slot of slots) {
+      if (sHour < slot.end && slot.start < eHour) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const handleReservationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!borrowDate || borrowDate < todayStr) {
+      alert("借用日期不可早於今天，請選擇有效日期。");
+      return;
+    }
+
+    const sHourNum = Number(startHour.split(":")[0]);
+    const eHourNum = Number(endHour.split(":")[0]);
+    if (sHourNum < 7 || eHourNum > 22) {
+      alert("借用時段僅允許在 07:00 至 22:00 之間。");
+      return;
+    }
+    if (eHourNum <= sHourNum) {
+      alert("結束時間需晚於開始時間且至少相差 1 小時。");
+      return;
+    }
+
+    if (selectedClassroom) {
+      await fetchReservationsForClassroomWeek(selectedClassroom.id, borrowDate);
+      const sH = sHourNum;
+      const eH = eHourNum;
+      if (isOverlap(borrowDate, sH, eH, selectedClassroom.id)) {
+        alert("此時段教室以被借用!");
+        return;
+      }
+    }
+
+    if (!purpose || purpose.trim() === "") {
+      alert("請填寫理由");
+      return;
+    }
 
     try {
       const date = borrowDate;
       const startTime = `${date}T${startHour}:00+08:00`;
       const endTime = `${date}T${endHour}:00+08:00`;
-
 
       console.log("送出的 JSON：", {
         classroom_id: selectedClassroom.id,
@@ -270,6 +374,10 @@ export default function HomePage() {
     }
 
     setClassrooms(result);
+  };
+
+  const formatToMonthDay = (dateStr: string) => {
+    return dateStr ? dateStr.slice(5).replace("-", "/") : "";
   };
 
   return (
@@ -492,41 +600,72 @@ export default function HomePage() {
                   <button onClick={() => navigate("/")}>登入以申請教室</button>
                 </div>
               ) : !isAdmin ? (
-                // --- 使用者申請教室表單 ---
+                // --- 一般使用者登入模式 申請表單 ---
                 <form className="apply-form" onSubmit={handleReservationSubmit}>
                   <label>借用日期：</label>
-                  <input
-                    type="date"
-                    value={borrowDate}
-                    onChange={(e) => setBorrowDate(e.target.value)}
-                  />
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="date"
+                      value={borrowDate}
+                      min={todayStr}
+                      onChange={(e) => setBorrowDate(e.target.value)}
+                    />
+                    {/* 查看週課表按鈕 */}
+                    <button
+                      type="button"
+                      className="checktable-button"
+                      onClick={async () => {
+                        if (!selectedClassroom) {
+                          alert("請先選擇教室以查看週課表。");
+                          return;
+                        }
+                        await fetchReservationsForClassroomWeek(selectedClassroom.id, borrowDate);
+                        setShowScheduleModal(true);
+                      }}
+                    >
+                      查看週課表
+                    </button>
+                  </div>
+
                   <div className="time-row">
                     <div className="time-field">
                       <label>開始時間：</label>
                       <select
                         value={startHour}
-                        onChange={(e) => setStartHour(e.target.value)}
+                        onChange={(e) => {
+                          const newStart = e.target.value;
+                          setStartHour(newStart);
+                          if (endHour < newStart) {
+                            setEndHour(newStart);
+                          }
+                        }}
                       >
-                        {Array.from({ length: 24 }).map((_, i) => {
-                          const hour = i.toString().padStart(2, "0");
-                          return (
-                            <option key={i} value={`${hour}:00`}>
-                              {hour}:00
-                            </option>
-                          );
-                        })}
+                        {allowedStartHours.map((hour) => (
+                          <option key={hour} value={`${hour}:00`}>
+                            {hour}:00
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div className="time-field">
                       <label>結束時間：</label>
                       <select
                         value={endHour}
-                        onChange={(e) => setEndHour(e.target.value)}
+                        onChange={(e) => {
+                          const newEnd = e.target.value;
+                          if (newEnd < startHour) {
+                            alert("結束時間不可早於開始時間");
+                            setEndHour(startHour);
+                          } else {
+                            setEndHour(newEnd);
+                          }
+                        }}
                       >
-                        {Array.from({ length: 24 }).map((_, i) => {
-                          const hour = i.toString().padStart(2, "0");
+                        {allowedEndHours.map((hour) => {
+                          const value = `${hour}:00`;
+                          const disabled = Number(hour) <= Number(startHour.split(":")[0]);
                           return (
-                            <option key={i} value={`${hour}:00`}>
+                            <option key={hour} value={value} disabled={disabled}>
                               {hour}:00
                             </option>
                           );
@@ -698,6 +837,54 @@ export default function HomePage() {
                 儲存修改
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 週課表 Modal */}
+      {showScheduleModal && selectedClassroom && (
+        <div className="modal-overlay" onClick={() => setShowScheduleModal(false)}>
+          <div className="modal-content schedule-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowScheduleModal(false)}>×</button>
+            <h3 className="schedule-title">教室週課表：{selectedClassroom.name}</h3>
+            <div className="schedule-table-wrapper">
+              <table className="schedule-table">
+                <thead>
+                  <tr>
+                    <th className="schedule-time-header">時段</th>
+                    {weekDates.map((d) => (
+                      <th key={d} className="schedule-header-cell">{formatToMonthDay(d)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {allowedStartHours.map((hourStr) => {
+                    const hour = Number(hourStr);
+                    const next = (hour + 1).toString().padStart(2, "0");
+                    return (
+                      <tr key={hour}>
+                        {/* 左側顯示時段範圍 (07:00-08:00) */}
+                        <td className="schedule-time-cell">{hourStr}:00-{next}:00</td>
+                        {weekDates.map((d) => {
+                          const slots = reservationsMap[d] || [];
+                          const occupied = slots.some((s: any) => hour < s.end && s.start < hour + 1);
+                          const info = slots.find((s: any) => hour < s.end && s.start < hour + 1);
+                          return (
+                            <td
+                              key={d + hour}
+                              className={`schedule-cell ${occupied ? "occupied" : ""}`}
+                              title={occupied ? `已被借用 (${info?.raw?.purpose || "無摘要"})` : ""}
+                            >
+                              {occupied ? <span className="cell-badge">已借</span> : ""}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
