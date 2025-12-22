@@ -208,19 +208,32 @@ export default function HomePage() {
     };
 
 
-    const getWeekForDate = (dateStr: string) => {
-    const d = new Date(dateStr + "T00:00:00");  
-    const day = d.getDay(); 
-    const diffToMonday = (day === 0) ? -6 : (1 - day);
+
+  const getWeekForDate = (dateStr: string) => {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const d = new Date(year, month - 1, day);
+    const dayOfWeek = d.getDay(); 
+    const diffToMonday = (dayOfWeek === 0) ? -6 : (1 - dayOfWeek);
     const monday = new Date(d);
     monday.setDate(d.getDate() + diffToMonday);
     const dates: string[] = [];
     for (let i = 0; i < 7; i++) {
       const dd = new Date(monday);
       dd.setDate(monday.getDate() + i);
-      dates.push(dd.toISOString().split("T")[0]);
+      const yyyy = dd.getFullYear();
+      const mm = String(dd.getMonth() + 1).padStart(2, "0");
+      const ddStr = String(dd.getDate()).padStart(2, "0");
+      dates.push(`${yyyy}-${mm}-${ddStr}`);
     }
     return dates;
+  };
+
+  // 格式化週區間
+  const formatWeekRange = (weekDates: string[]) => {
+    if (weekDates.length !== 7) return "";
+    const start = weekDates[0].slice(5).replace("-", "/");
+    const end = weekDates[6].slice(5).replace("-", "/");
+    return `${start}-${end}`;
   };
 
   const fetchReservationsForClassroomWeek = async (classroomId: any, refDate: string) => {
@@ -240,15 +253,20 @@ export default function HomePage() {
       const map: Record<string, Array<any>> = {};
       week.forEach((d) => (map[d] = []));
       data.forEach((r: any) => {
-        const rClassId = String(r.classroom_id ?? r.classroomId ?? r.classroom); 
+        if (r.status !== "Approved") return;
+        const rClassId = String(r.classroom_id ?? r.classroomId ?? r.classroom?.id ?? r.classroom);
         if (String(classroomId) !== rClassId) return;
-        const s = String(r.start_time ?? "");
-        const e = String(r.end_time ?? "");
-        if (!s.includes("T") || !e.includes("T")) return;
-        const dateStr = s.split("T")[0];
+        let s = r.start_time;
+        let e = r.end_time;
+        const startDate = new Date(s);
+        const endDate = new Date(e);
+        const yyyy = startDate.getFullYear();
+        const mm = String(startDate.getMonth() + 1).padStart(2, "0");
+        const ddStr = String(startDate.getDate()).padStart(2, "0");
+        const dateStr = `${yyyy}-${mm}-${ddStr}`;
         if (!week.includes(dateStr)) return;
-        const startHourNum = Number(s.split("T")[1].slice(0, 2));
-        const endHourNum = Number(e.split("T")[1].slice(0, 2));
+        const startHourNum = startDate.getHours();
+        const endHourNum = endDate.getHours();
         map[dateStr].push({ start: startHourNum, end: endHourNum, raw: r });
       });
       setReservationsMap(map);
@@ -339,17 +357,14 @@ export default function HomePage() {
   ];
 
   // 搜尋處理
-  const handleSearch = (filters: any) => {
-    const { time, type, capacity, onlyAvailable } = filters;
-    console.log("查詢條件：", filters);
-
+  const handleSearch = async (filters: any) => {
+    const { date, startHour, endHour, type, capacity, onlyAvailable } = filters;
     let result = allClassrooms.slice();
 
     // 類別過濾
     if (type) {
       result = result.filter((c) => (c.type || "").toString() === type);
     }
-
     // 容納人數過濾
     if (capacity) {
       if (capacity === "60以上") {
@@ -362,14 +377,37 @@ export default function HomePage() {
       }
     }
 
-    // "時段"與"是否可借用"待更新
-    if (time || onlyAvailable) {
-      if (onlyAvailable) {
-        alert('「只顯示可借用教室」待更新。');
-      }
-      if (time) {
-        console.log('時段條件待更新:', time);
-      }
+    // 只顯示可借用教室
+    if (onlyAvailable && date && startHour && endHour) {
+      // 取得所有預約
+      let reservationsData: any[] = [];
+      try {
+        const { success, data } = await getAllReservations();
+        if (success && Array.isArray(data)) {
+          reservationsData = data.filter((r: any) => r.status === "Approved");
+        }
+      } catch {}
+      const sHourNum = Number(startHour.split(":")[0]);
+      const eHourNum = Number(endHour.split(":")[0]);
+      result = result.filter((c) => {
+        // 找該教室在該日期的所有已核准預約
+        const classroomId = String(c.id);
+        const occupied = reservationsData.some((r) => {
+          const rClassId = String(r.classroom_id ?? r.classroomId ?? r.classroom?.id ?? r.classroom);
+          if (rClassId !== classroomId) return false;
+          const startDate = new Date(r.start_time);
+          const endDate = new Date(r.end_time);
+          const yyyy = startDate.getFullYear();
+          const mm = String(startDate.getMonth() + 1).padStart(2, "0");
+          const ddStr = String(startDate.getDate()).padStart(2, "0");
+          const dateStr = `${yyyy}-${mm}-${ddStr}`;
+          if (dateStr !== date) return false;
+          const rStart = startDate.getHours();
+          const rEnd = endDate.getHours();
+          return sHourNum < rEnd && rStart < eHourNum;
+        });
+        return !occupied;
+      });
     }
 
     setClassrooms(result);
@@ -378,6 +416,23 @@ export default function HomePage() {
   const formatToMonthDay = (dateStr: string) => {
     return dateStr ? dateStr.slice(5).replace("-", "/") : "";
   };
+
+  const getWeekRangeStr = (dates: string[]) => {
+    if (!dates.length) return "";
+    const start = dates[0];
+    const end = dates[dates.length - 1];
+    const format = (d: string) => {
+      const [y, m, da] = d.split("-");
+      return `${m}/${da}`;
+    };
+    return `${format(start)} - ${format(end)}`;
+  };
+
+  useEffect(() => {
+    if (showScheduleModal && selectedClassroom) {
+      fetchReservationsForClassroomWeek(selectedClassroom.id, borrowDate);
+    }
+  }, [borrowDate]);
 
   return (
     <div className="homepage-container">
@@ -845,14 +900,21 @@ export default function HomePage() {
         <div className="modal-overlay" onClick={() => setShowScheduleModal(false)}>
           <div className="modal-content schedule-modal" onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowScheduleModal(false)}>×</button>
-            <h3 className="schedule-title">教室週課表：{selectedClassroom.name}</h3>
+            <h3 className="schedule-title">
+              教室週課表：{selectedClassroom.name}
+              <span style={{ fontSize: "1rem", marginLeft: "12px", color: "#555" }}>
+                {formatWeekRange(weekDates)}
+              </span>
+            </h3>
             <div className="schedule-table-wrapper">
               <table className="schedule-table">
                 <thead>
                   <tr>
                     <th className="schedule-time-header">時段</th>
                     {weekDates.map((d) => (
-                      <th key={d} className="schedule-header-cell">{formatToMonthDay(d)}</th>
+                      <th key={d} className="schedule-header-cell">
+                        {d.slice(5).replace("-", "/")}
+                      </th>
                     ))}
                   </tr>
                 </thead>

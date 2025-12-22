@@ -549,6 +549,12 @@ html, body {
   table-layout: fixed;
   font-size: 11px; 
   min-width: 380px;
+  border: 1px solid #bfc8e6;
+}
+
+.schedule-table th,
+.schedule-table td {
+  border: 1px solid #bfc8e6;
 }
 
 /* 日期 */

@@ -10,12 +10,13 @@ export default function SignupPage(): React.ReactElement {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !username || !email || !password || !phone) {
+    if (!name || !username || !email || !password || !phone || !studentId) {
       setMessage("請填寫所有欄位");
       return;
     }
@@ -38,6 +39,7 @@ export default function SignupPage(): React.ReactElement {
         name,
         password,
         phone_number: phone,
+        student_id: studentId,
         username,
       };
       const { res, data } = await register(payload);
@@ -135,6 +137,18 @@ export default function SignupPage(): React.ReactElement {
               maxLength={10}
               inputMode="numeric"
               pattern="09[0-9]{8}"
+            />
+          </div>
+
+          <div className="form-row">
+            <label>學號</label>
+            <input
+              value={studentId}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setStudentId(e.target.value);
+                setMessage("");
+              }}
+              placeholder="請輸入學號"
             />
           </div>
 
