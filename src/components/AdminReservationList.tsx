@@ -48,7 +48,7 @@ export default function AdminReservationList({
     if (hour === 0) hour = 12;
 
     return `${yyyy}/${mm}/${dd} ${period}${hour}:${minute}`;
-    }
+  }
 
   const handleReview = async (status: "Approved" | "Rejected") => {
     if (!selected) return;
@@ -91,34 +91,34 @@ export default function AdminReservationList({
 
       {loading ? (
         <p className="no-reservation">載入中...</p>
-        ) : reservations.length === 0 ? (
+      ) : reservations.length === 0 ? (
         <p className="no-reservation">目前無申請紀錄。</p>
-        ) : (
+      ) : (
         <div className="reservation-list">
-            {reservations.map((r) => (
+          {reservations.map((r) => (
             <div
-                key={r.id}
-                className={`reservation-item ${r.status.toLowerCase()}`}
-                onClick={() => setSelected(r)}
+              key={r.id}
+              className={`reservation-item ${r.status.toLowerCase()}`}
+              onClick={() => setSelected(r)}
             >
-                <div className="reservation-info">
+              <div className="reservation-info">
                 <div className="reservation-time">
-                    {formatTime(r.start_time)} - <br />
-                    {formatTime(r.end_time)}
+                  {formatTime(r.start_time)} - <br />
+                  {formatTime(r.end_time)}
                 </div>
-                </div>
+              </div>
 
-                <div className={`status-tag ${r.status.toLowerCase()}`}>
+              <div className={`status-tag ${r.status.toLowerCase()}`}>
                 {r.status === "Approved"
-                    ? "通過"
-                    : r.status === "Rejected"
+                  ? "通過"
+                  : r.status === "Rejected"
                     ? "拒絕"
                     : "審核中"}
-                </div>
+              </div>
             </div>
-            ))}
+          ))}
         </div>
-        )}
+      )}
 
 
       {selected && (
