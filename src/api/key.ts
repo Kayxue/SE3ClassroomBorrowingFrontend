@@ -12,7 +12,7 @@ export async function createKey(classroom_id: string, key_number: string) {
   const res = await fetch(`${API_BASE}/key`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ classroom_id, key_number, is_active: true }),
+    body: JSON.stringify({ classroom_id, key_number }),
     credentials: "include",
   });
   return { success: res.ok, status: res.status, data: await safeParse(res) };
