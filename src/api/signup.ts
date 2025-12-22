@@ -6,6 +6,7 @@ export async function register(payload: {
   name: string;
   password: string;
   phone_number: string;
+  student_id: string;
   username: string;
 }) {
   const res = await fetch(`${API_BASE}/user/register`, {
