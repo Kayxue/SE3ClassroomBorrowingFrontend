@@ -127,7 +127,6 @@ export default function HomePage() {
     const fetchUserProfile = async () => {
       try {
         const { res, data } = await getProfile();
-        console.log(res.status);
 
         if (res.ok && data) {
           setIsLoggedIn(true);
@@ -141,14 +140,15 @@ export default function HomePage() {
             if (success) {
               const borrowable: BorrowListItem[] = await Promise.all(
                 data.items
-                  .filter((r: any) => r.status === "Approved")
+                  .filter((r: any) => r.status === "Approved" && r.classroom_id !== null)
                   .map(async (r: any) => {
+
                     const keyInfo = await getClassroomWithKey(r.classroom_id);
 
                     return {
                       id: r.id, 
                       classroomName: keyInfo.success
-                        ? keyInfo.data.name
+                        ? keyInfo.data.classroom.name
                         : "未知教室",
                       keyId: keyInfo.success
                         ? keyInfo.data.keys?.[0]?.id || null
@@ -168,6 +168,8 @@ export default function HomePage() {
                     )
                     .map((p) => p.reservationId)
                 );
+
+                console.log(existingReservationIds);
 
                 const newItems = borrowable.filter(
                   (b) =>
@@ -364,6 +366,8 @@ export default function HomePage() {
     return false;
   };
   async function handleBorrow(item: BorrowListItem) {
+    console.log(item);
+
     if (item.type !== "borrowable") return;
 
     await borrowKey(
