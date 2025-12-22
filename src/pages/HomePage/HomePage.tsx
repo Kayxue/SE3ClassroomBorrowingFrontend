@@ -5,7 +5,7 @@ import SearchBar from "../../components/SearchBar";
 import unknownPic from "../../assets/unknowpic.jpg";
 import AdminReservationList from "../../components/AdminReservationList";
 import { useNavigate } from "react-router-dom";
-import { borrowKey, returnKey, createKey ,getKeyLogsByReservation , getKeyLogs} from "../../api/key";
+import { borrowKey, returnKey, createKey, getKeyLogsByReservation, getKeyLogs, getKeyTransactionsById } from "../../api/key";
 import {
   FaUserCircle,
   FaEnvelope,
@@ -25,7 +25,7 @@ import {
 } from "../../api/classroom";
 import UserNotificationPage from "../UserNotificationPage/UserNotificationPage";
 import { getProfile } from "../../api/profile";
-import { createReservation, getAllReservations, getAdminReservations } from "../../api/reservation";
+import { createReservation, getAllReservations, getAdminReservations, getReservationById } from "../../api/reservation";
 
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -75,19 +75,22 @@ export default function HomePage() {
   const [reservationsMap, setReservationsMap] = useState<Record<string, Array<any>>>({});
 
   type BorrowListItem =
-  | {
+    | {
       type: "borrowable";          // 來自 Approved
       reservationId: string;
       keyId: string;
       classroomName: string;
+      classroomId: string;
       deadline: string;
     }
-  | {
+    | {
       type: "borrowed";            // 來自 key logs
       keyLogId: string;
       keyId: string;
       classroomName: string;
+      classroomId: string;
       deadline: string;
+      reservationId: string;
     };
 
   const [showReservationModal, setShowReservationModal] = useState(false);
@@ -103,7 +106,7 @@ export default function HomePage() {
     setShowEditModal(true);
   };
 
-  
+
   async function getKeyIdByClassroom(classroomId: string) {
     try {
       const { success, data } = await getClassroomWithKey(classroomId);
@@ -123,6 +126,7 @@ export default function HomePage() {
       return null;
     }
   }
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -320,8 +324,10 @@ export default function HomePage() {
   async function handleBorrow(item: BorrowListItem) {
     if (item.type !== "borrowable") return;
 
+    const keyId = await getKeyIdByClassroom(item.classroomId);
+
     await borrowKey(
-      item.keyId,
+      keyId,
       new Date().toISOString(),
       item.deadline,
       item.reservationId
@@ -343,67 +349,78 @@ export default function HomePage() {
     await fetchBorrowedList();
   }
 
-
+  const checkKeyIsReturned = async (keyId: string) => {
+    const { success, data } = await getKeyTransactionsById(keyId);
+    const unreturnedLogs = data.filter((log: any) => log.returned_at == null);
+    return unreturnedLogs.length === 0;
+  }
 
   const fetchBorrowedList = async () => {
-  try {
-    const result: BorrowListItem[] = [];
+    try {
+      const result: BorrowListItem[] = [];
 
-    const { success: logSuccess, data: logs } = await getKeyLogs({ returned: false });
+      const { success: logSuccess, data: logs } = await getKeyLogs({ returned: false });
 
-    if (logSuccess && Array.isArray(logs)) {
-      const borrowedItems: BorrowListItem[] = await Promise.all(
-        logs.map(async (log: any) => {
-          let classroomName = "未知教室";
-          if (log.classroom_id) {
-            const { success, data } = await getClassroomById(log.classroom_id);
-            if (success && data?.name) classroomName = data.name;
-          }
-          return {
-            type: "borrowed",
-            keyLogId: log.id,
-            keyId: log.key_id,
-            classroomName,
-            deadline: log.deadline,
-          };
-        })
-      );
-      result.push(...borrowedItems);
+      if (logSuccess && Array.isArray(logs)) {
+        const borrowedItems: BorrowListItem[] = await Promise.all(
+          logs.map(async (log: any) => {
+            let classroomName = "未知教室";
+            let classroomId = "";
+
+            const relatedReservation = await getReservationById(log.reservation_id);
+
+            if (relatedReservation.success && relatedReservation.data) {
+              classroomId = relatedReservation.data.classroom_id;
+              const { success, data } = await getClassroomById(classroomId);
+              if (success && data?.name) classroomName = data.name;
+            }
+
+            return {
+              type: "borrowed",
+              keyLogId: log.id,
+              keyId: log.key_id,
+              classroomName,
+              classroomId,
+              deadline: log.deadline,
+              reservationId: log.reservation_id,
+            };
+          })
+        );
+        result.push(...borrowedItems);
+      }
+
+      const adminRes = await getAdminReservations("Approved");
+
+      if (adminRes.success && Array.isArray(adminRes.data.items)) {
+        const borrowableItems: BorrowListItem[] = await Promise.all(
+          adminRes.data.items.map(async (r: any) => {
+            let classroomName = "未知教室";
+            let classroomId = "";
+            if (r.classroom_id) {
+              const { success, data } = await getClassroomById(r.classroom_id);
+              if (success && data?.name) classroomName = data.name;
+              if (success && data?.id) classroomId = data.id;
+            }
+
+            return {
+              type: "borrowable",
+              reservationId: r.id,
+              keyId: r.key_id ?? "",
+              classroomName,
+              classroomId,
+              deadline: r.end_time,
+            };
+          })
+        );
+        result.push(...(borrowableItems.filter(e => !result.find(r => r.reservationId === e.reservationId))));
+      }
+
+      setBorrowedList(result);
+    } catch (err) {
+      console.error("fetchBorrowedList 失敗", err);
+      setBorrowedList([]);
     }
-
-    const adminRes = await getAdminReservations("Approved");
-
-    if (adminRes.success && Array.isArray(adminRes.data.items)) {
-      const borrowableItems: BorrowListItem[] = await Promise.all(
-        adminRes.data.items.map(async (r: any) => {
-          let classroomName = "未知教室";
-          if (r.classroom_id) {
-            const { success, data } = await getClassroomById(r.classroom_id);
-            if (success && data?.name) classroomName = data.name;
-          }
-
-          console.log(r);
-
-          return {
-            type: "borrowable",
-            reservationId: r.id,
-            keyId: r.key_id ?? "",
-            classroomName,
-            deadline: r.end_time,
-          };
-        })
-      );
-      result.push(...borrowableItems);
-    }
-
-    console.log(result.filter((r) => r.type === "borrowable"));
-
-    setBorrowedList(result);
-  } catch (err) {
-    console.error("fetchBorrowedList 失敗", err);
-    setBorrowedList([]);
-  }
-};
+  };
 
   const handleReservationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
