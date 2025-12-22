@@ -326,6 +326,11 @@ export default function HomePage() {
 
     const keyId = await getKeyIdByClassroom(item.classroomId);
 
+    if(!keyId) {
+      alert("教室尚未綁定鑰匙");
+      return;
+    }
+
     await borrowKey(
       keyId,
       new Date().toISOString(),
