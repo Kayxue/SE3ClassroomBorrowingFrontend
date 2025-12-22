@@ -129,3 +129,11 @@ export const deleteReservation = async (id: string) => {
     return { success: false };
   }
 };
+
+export async function getReservationById(id: string) {
+  const res = await fetch(`${API_BASE}/reservation/admin/${id}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  return { success: res.ok, res, data: await res.json() };
+}

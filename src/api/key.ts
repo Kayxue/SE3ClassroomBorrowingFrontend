@@ -77,3 +77,14 @@ export async function getKeyLogs(params: { returned?: boolean } = {}) {
     data: await safeParse(res),
   };
 }
+
+export async function getKeyTransactionsById(keyId: string) {
+  const res = await fetch(`${API_BASE}/key/${keyId}/logs`, {
+    credentials: "include",
+  });
+  return {
+    success: res.ok,
+    status: res.status,
+    data: await res.json() ?? null,
+  };
+}
