@@ -134,55 +134,7 @@ export default function HomePage() {
           if (data.role === "Admin") {
             setIsAdmin(true);
             await fetchBorrowedList();
-
-            const { success, data } = await getAdminReservations("Approved");
-
-            if (success) {
-              const borrowable: BorrowListItem[] = await Promise.all(
-                data.items
-                  .filter((r: any) => r.status === "Approved" && r.classroom_id !== null)
-                  .map(async (r: any) => {
-
-                    const keyInfo = await getClassroomWithKey(r.classroom_id);
-
-                    return {
-                      id: r.id, 
-                      classroomName: keyInfo.success
-                        ? keyInfo.data.classroom.name
-                        : "未知教室",
-                      keyId: keyInfo.success
-                        ? keyInfo.data.keys?.[0]?.id || null
-                        : null,
-                      borrowed: false,
-                      deadline: r.end_time,
-                    };
-                  })
-              );
-
-              setBorrowedList((prev) => {
-                const existingReservationIds = new Set(
-                  prev
-                    .filter(
-                      (p): p is Extract<BorrowListItem, { type: "borrowable" }> =>
-                        p.type === "borrowable"
-                    )
-                    .map((p) => p.reservationId)
-                );
-
-                console.log(existingReservationIds);
-
-                const newItems = borrowable.filter(
-                  (b) =>
-                    b.type === "borrowable" &&
-                    !existingReservationIds.has(b.reservationId)
-                );
-
-                return [...prev, ...newItems];
-              });
-            }
-
           }
-
         }
       } catch (err) {
         console.error("抓取使用者資料錯誤：", err);
@@ -366,8 +318,6 @@ export default function HomePage() {
     return false;
   };
   async function handleBorrow(item: BorrowListItem) {
-    console.log(item);
-
     if (item.type !== "borrowable") return;
 
     await borrowKey(
@@ -432,6 +382,8 @@ export default function HomePage() {
             if (success && data?.name) classroomName = data.name;
           }
 
+          console.log(r);
+
           return {
             type: "borrowable",
             reservationId: r.id,
@@ -443,6 +395,8 @@ export default function HomePage() {
       );
       result.push(...borrowableItems);
     }
+
+    console.log(result.filter((r) => r.type === "borrowable"));
 
     setBorrowedList(result);
   } catch (err) {
