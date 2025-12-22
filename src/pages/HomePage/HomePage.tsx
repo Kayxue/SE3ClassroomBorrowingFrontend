@@ -607,7 +607,7 @@ export default function HomePage() {
         <UserNotificationPage onClose={() => setShowNotifications(false)} />
       )}
 
-      {isLoggedIn && !isAdmin ? (
+      {isLoggedIn && isAdmin ? (
         <aside className="sidebar">
           <h2 className="sidebar-title">待還教室列表</h2>
 
