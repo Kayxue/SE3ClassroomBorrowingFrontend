@@ -35,14 +35,16 @@ export default function AdminReservationList({
 
   function formatTime(datetime: string) {
     const date = new Date(datetime);
-    date.setHours(date.getHours() + 8); // 加上台灣時區 (+8)
+    // 轉換為台灣時區 (+8)
+    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    const taiwan = new Date(utc + 8 * 60 * 60000);
 
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const dd = String(date.getDate()).padStart(2, "0");
+    const yyyy = taiwan.getFullYear();
+    const mm = String(taiwan.getMonth() + 1).padStart(2, "0");
+    const dd = String(taiwan.getDate()).padStart(2, "0");
 
-    let hour = date.getHours();
-    const minute = date.getMinutes().toString().padStart(2, "0");
+    let hour = taiwan.getHours();
+    const minute = taiwan.getMinutes().toString().padStart(2, "0");
     const period = hour >= 12 ? "下午" : "上午";
     if (hour > 12) hour -= 12;
     if (hour === 0) hour = 12;
@@ -128,8 +130,7 @@ export default function AdminReservationList({
             <p>教室：{selected.classroom_name}</p>
             <p>
               時間：
-              {new Date(selected.start_time).toLocaleString()} ~{" "}
-              {new Date(selected.end_time).toLocaleString()}
+              {formatTime(selected.start_time)} ~ {formatTime(selected.end_time)}
             </p>
             <p>狀態：{selected.status}</p>
             <p>用途：{selected.purpose || "未填寫"}</p>
